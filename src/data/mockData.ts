@@ -26,7 +26,7 @@ export const mockVacancies: Vacancy[] = [
         expectedAnswer: 'Понимание различий между мемоизацией значений и функций'
       }
     ],
-    botLink: 'https://t.me/your_bot?start=a1b2c3d4-e5f6-4789-a0b1-c2d3e4f5a6b7',
+    botLink: 'https://t.me/Human_resourse_bot?start=a1b2c3d4-e5f6-4789-a0b1-c2d3e4f5a6b7',
     createdAt: new Date('2024-01-15'),
     isActive: true
   },
@@ -54,7 +54,7 @@ export const mockVacancies: Vacancy[] = [
         expectedAnswer: 'Понимание принципов микросервисной архитектуры, опыт работы с API Gateway, message brokers'
       }
     ],
-    botLink: 'https://t.me/your_bot?start=f7e8d9c0-b1a2-4345-9876-fedcba098765',
+    botLink: 'https://t.me/Human_resourse_bot?start=f7e8d9c0-b1a2-4345-9876-fedcba098765',
     createdAt: new Date('2024-01-10'),
     isActive: true
   }

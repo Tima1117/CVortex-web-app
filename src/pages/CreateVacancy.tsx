@@ -35,7 +35,7 @@ export default function CreateVacancy() {
   const [questions, setQuestions] = useState<Question[]>([
     { id: '1', text: '', timeLimit: 60, expectedAnswer: '' }
   ]);
-  const [botLink] = useState(`https://t.me/your_bot?start=${generateUUID()}`);
+  const [botLink] = useState(`https://t.me/Human_resourse_bot?start=${generateUUID()}`);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleAddSkill = () => {
@@ -74,15 +74,17 @@ export default function CreateVacancy() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Здесь будет отправка данных на бэкенд
-    // const vacancyData = { title, keySkills: skills, questions, botLink };
+    // Отправка данных на бэкенд
+    // Ссылка botLink генерируется на фронте и передается на бэк
+    // Бэкенд будет использовать UUID из ссылки для идентификации кандидата
+    // const vacancyData: CreateVacancyRequest = { title, keySkills: skills, questions, botLink };
     // await fetch('/api/vacancies', { method: 'POST', body: JSON.stringify(vacancyData) });
 
     console.log('Создание вакансии:', {
       title,
       keySkills: skills,
       questions,
-      botLink
+      botLink // Уникальная ссылка: https://t.me/Human_resourse_bot?start={UUID}
     });
 
     setShowSuccess(true);

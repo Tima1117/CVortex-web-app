@@ -57,6 +57,7 @@ export interface CreateVacancyRequest {
   title: string;
   keySkills: string[];
   questions: Question[];
+  botLink: string;
 }
 
 // Утилитарные функции для статусов
