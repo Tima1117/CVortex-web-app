@@ -10,11 +10,22 @@ import {
   Divider,
   Chip,
   Alert,
+  InputAdornment,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Question } from '../types';
+
+// Функция для генерации UUID v4
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 
 export default function CreateVacancy() {
   const navigate = useNavigate();
@@ -22,9 +33,9 @@ export default function CreateVacancy() {
   const [skillInput, setSkillInput] = useState('');
   const [skills, setSkills] = useState<string[]>([]);
   const [questions, setQuestions] = useState<Question[]>([
-    { id: '1', text: '', timeLimit: 60 }
+    { id: '1', text: '', timeLimit: 60, expectedAnswer: '' }
   ]);
-  const [aiPrompt, setAiPrompt] = useState('');
+  const [botLink] = useState(`https://t.me/your_bot?start=${generateUUID()}`);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleAddSkill = () => {
@@ -42,7 +53,8 @@ export default function CreateVacancy() {
     const newQuestion: Question = {
       id: String(questions.length + 1),
       text: '',
-      timeLimit: 60
+      timeLimit: 60,
+      expectedAnswer: ''
     };
     setQuestions([...questions, newQuestion]);
   };
@@ -63,14 +75,14 @@ export default function CreateVacancy() {
     e.preventDefault();
 
     // Здесь будет отправка данных на бэкенд
-    // const vacancyData = { title, keySkills: skills, questions, aiPrompt };
+    // const vacancyData = { title, keySkills: skills, questions, botLink };
     // await fetch('/api/vacancies', { method: 'POST', body: JSON.stringify(vacancyData) });
 
     console.log('Создание вакансии:', {
       title,
       keySkills: skills,
       questions,
-      aiPrompt
+      botLink
     });
 
     setShowSuccess(true);
@@ -79,11 +91,15 @@ export default function CreateVacancy() {
     }, 2000);
   };
 
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(botLink);
+    // Можно добавить уведомление о копировании
+  };
+
   const isFormValid = () => {
     return title.trim() !== '' &&
            skills.length > 0 &&
-           questions.every((q) => q.text.trim() !== '') &&
-           aiPrompt.trim() !== '';
+           questions.every((q) => q.text.trim() !== '');
   };
 
   return (
@@ -119,10 +135,10 @@ export default function CreateVacancy() {
           {/* Ключевые навыки */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Ключевые навыки для скрининга *
+              Ключевые пожелания к кандидату *
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Укажите навыки, технологии или требования, по которым нейросеть будет оценивать резюме кандидатов
+              Укажите навыки, технологии или требования к кандидату. Эта информация будет использоваться для анализа резюме.
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
               <TextField
@@ -164,6 +180,36 @@ export default function CreateVacancy() {
 
           <Divider sx={{ my: 4 }} />
 
+          {/* Ссылка для Telegram бота */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              Ссылка для кандидатов
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Уникальная ссылка для перехода в Telegram бота. Отправьте эту ссылку кандидатам для прохождения интервью.
+            </Typography>
+            <TextField
+              fullWidth
+              value={botLink}
+              InputProps={{
+                readOnly: true,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={handleCopyLink}
+                      edge="end"
+                      title="Скопировать ссылку"
+                    >
+                      <ContentCopyIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+
+          <Divider sx={{ my: 4 }} />
+
           {/* Вопросы для интервью */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
@@ -187,6 +233,16 @@ export default function CreateVacancy() {
                       value={question.text}
                       onChange={(e) => handleQuestionChange(question.id, 'text', e.target.value)}
                       required
+                      sx={{ mb: 2 }}
+                    />
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={2}
+                      label="Пожелание к ответу (опционально)"
+                      placeholder="Опишите, что вы ожидаете услышать в ответе на этот вопрос"
+                      value={question.expectedAnswer || ''}
+                      onChange={(e) => handleQuestionChange(question.id, 'expectedAnswer', e.target.value)}
                       sx={{ mb: 2 }}
                     />
                     <TextField
@@ -215,28 +271,6 @@ export default function CreateVacancy() {
             >
               Добавить вопрос
             </Button>
-          </Box>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* Промпт для AI */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Инструкции для нейросети *
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Опишите пожелания к кандидату, критерии оценки и любую другую информацию,
-              которая поможет нейросети правильно анализировать ответы
-            </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={6}
-              placeholder="Например: Кандидат должен иметь опыт коммерческой разработки от 2 лет, знать современные практики разработки, уметь работать в команде. При оценке ответов обращайте внимание на глубину знаний, практический опыт и способность объяснять сложные концепции простым языком."
-              value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
-              required
-            />
           </Box>
 
           <Divider sx={{ my: 4 }} />

@@ -7,11 +7,26 @@ export const mockVacancies: Vacancy[] = [
     title: 'Frontend разработчик (React)',
     keySkills: ['React', 'TypeScript', 'JavaScript', 'HTML/CSS', 'REST API'],
     questions: [
-      { id: 'q1', text: 'Расскажите о своем опыте работы с React', timeLimit: 60 },
-      { id: 'q2', text: 'Какие методы оптимизации производительности React-приложений вы знаете?', timeLimit: 60 },
-      { id: 'q3', text: 'Объясните разницу между useMemo и useCallback', timeLimit: 60 }
+      { 
+        id: 'q1', 
+        text: 'Расскажите о своем опыте работы с React', 
+        timeLimit: 60,
+        expectedAnswer: 'Ожидаем опыт коммерческой разработки от 2 лет, знание основных концепций React'
+      },
+      { 
+        id: 'q2', 
+        text: 'Какие методы оптимизации производительности React-приложений вы знаете?', 
+        timeLimit: 60,
+        expectedAnswer: 'Должен знать React.memo, useMemo, useCallback, code splitting, виртуализацию'
+      },
+      { 
+        id: 'q3', 
+        text: 'Объясните разницу между useMemo и useCallback', 
+        timeLimit: 60,
+        expectedAnswer: 'Понимание различий между мемоизацией значений и функций'
+      }
     ],
-    aiPrompt: 'Кандидат должен иметь опыт коммерческой разработки на React от 2 лет, знать TypeScript, понимать принципы оптимизации и работы с состоянием.',
+    botLink: 'https://t.me/your_bot?start=a1b2c3d4-e5f6-4789-a0b1-c2d3e4f5a6b7',
     createdAt: new Date('2024-01-15'),
     isActive: true
   },
@@ -20,11 +35,26 @@ export const mockVacancies: Vacancy[] = [
     title: 'Backend разработчик (Python)',
     keySkills: ['Python', 'Django', 'PostgreSQL', 'Docker', 'REST API'],
     questions: [
-      { id: 'q4', text: 'Расскажите о вашем опыте с Django', timeLimit: 60 },
-      { id: 'q5', text: 'Как вы оптимизируете запросы к базе данных?', timeLimit: 60 },
-      { id: 'q6', text: 'Опишите архитектуру микросервисов', timeLimit: 60 }
+      { 
+        id: 'q4', 
+        text: 'Расскажите о вашем опыте с Django', 
+        timeLimit: 60,
+        expectedAnswer: 'Опыт разработки на Django от 3 лет, знание ORM, middleware, signals'
+      },
+      { 
+        id: 'q5', 
+        text: 'Как вы оптимизируете запросы к базе данных?', 
+        timeLimit: 60,
+        expectedAnswer: 'Знание select_related, prefetch_related, индексов, explain analyze'
+      },
+      { 
+        id: 'q6', 
+        text: 'Опишите архитектуру микросервисов', 
+        timeLimit: 60,
+        expectedAnswer: 'Понимание принципов микросервисной архитектуры, опыт работы с API Gateway, message brokers'
+      }
     ],
-    aiPrompt: 'Ищем кандидата с опытом разработки backend на Python от 3 лет, знанием Django/FastAPI, опытом работы с PostgreSQL и понимаем архитектуры микросервисов.',
+    botLink: 'https://t.me/your_bot?start=f7e8d9c0-b1a2-4345-9876-fedcba098765',
     createdAt: new Date('2024-01-10'),
     isActive: true
   }

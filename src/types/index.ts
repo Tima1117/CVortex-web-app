@@ -5,7 +5,7 @@ export interface Vacancy {
   title: string;
   keySkills: string[];
   questions: Question[];
-  aiPrompt: string;
+  botLink: string; // Уникальная ссылка для перехода в Telegram бота
   createdAt: Date;
   isActive: boolean;
 }
@@ -14,6 +14,7 @@ export interface Question {
   id: string;
   text: string;
   timeLimit: number; // в секундах
+  expectedAnswer?: string; // пожелание к ответу для нейросети
 }
 
 export interface Candidate {
@@ -56,7 +57,6 @@ export interface CreateVacancyRequest {
   title: string;
   keySkills: string[];
   questions: Question[];
-  aiPrompt: string;
 }
 
 // Утилитарные функции для статусов

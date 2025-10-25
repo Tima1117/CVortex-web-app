@@ -70,23 +70,23 @@ export default function VacanciesList() {
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
                   Вопросы для интервью:
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   {vacancy.questions.length} вопрос(ов)
                 </Typography>
 
                 <Divider sx={{ my: 2 }} />
 
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                  Инструкции для AI:
+                  Ссылка для кандидатов:
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ 
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: 'vertical',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'monospace',
+                  fontSize: '0.85rem',
                 }}>
-                  {vacancy.aiPrompt}
+                  {vacancy.botLink}
                 </Typography>
               </CardContent>
 
