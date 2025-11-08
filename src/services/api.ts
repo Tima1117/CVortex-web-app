@@ -1,138 +1,64 @@
-import { Vacancy, Candidate, CreateVacancyRequest } from '../types';
+import {CandidateQuestionAnswer, CandidateVacancyInfo, CreateVacancyRequest, Vacancy} from '../types';
 
-// Базовый URL API (замените на ваш реальный URL бэкенда)
-const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
-// Вспомогательная функция для выполнения запросов
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const token = localStorage.getItem('authToken');
-  
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-    ...options?.headers,
-  };
+    const token = localStorage.getItem('authToken');
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token && {Authorization: `Bearer ${token}`}),
+        ...options?.headers,
+    };
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Network error' }));
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
-  }
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers,
+    });
 
-  return response.json();
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({message: 'Network error'}));
+        throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
 }
 
 // API методы
 export const api = {
-  // Вакансии
-  async createVacancy(data: CreateVacancyRequest): Promise<Vacancy> {
-    // Отправляем данные вакансии вместе с уникальной ссылкой на бота
-    // botLink содержит UUID, который бэкенд будет использовать для идентификации
-    return fetchAPI<Vacancy>('/vacancies', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
+    async createVacancy(data: CreateVacancyRequest): Promise<boolean> {
+        await fetchAPI<{ success: boolean }>('/api/v1/vacancy', {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        return true;
+    },
 
-  async getVacancies(): Promise<Vacancy[]> {
-    return fetchAPI<Vacancy[]>('/vacancies');
-  },
+    async getVacancies(): Promise<Vacancy[]> {
+        return fetchAPI<Vacancy[]>(`/api/v1/vacancies`);
+    },
 
-  async getVacancy(id: string): Promise<Vacancy> {
-    return fetchAPI<Vacancy>(`/vacancies/${id}`);
-  },
+    async getVacancyByID(vacancy_id: string): Promise<Vacancy> {
+        return fetchAPI<Vacancy>(`/api/v1/vacancy/${vacancy_id}`);
+    },
 
-  async updateVacancy(id: string, data: Partial<Vacancy>): Promise<Vacancy> {
-    return fetchAPI<Vacancy>(`/vacancies/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
+    async getCandidateVacancies(): Promise<CandidateVacancyInfo[]> {
+        return fetchAPI<CandidateVacancyInfo[]>(`/api/v1/candidate-vacancy-infos`);
+    },
 
-  async deleteVacancy(id: string): Promise<void> {
-    return fetchAPI<void>(`/vacancies/${id}`, {
-      method: 'DELETE',
-    });
-  },
+    async getCandidateVacancyByID(candidate_id: number, vacancy_id: string): Promise<CandidateVacancyInfo> {
+        return fetchAPI<CandidateVacancyInfo>(`/api/v1/candidate-vacancy-info/${candidate_id}/${vacancy_id}`);
+    },
 
-  // Кандидаты
-  async getCandidates(filters?: {
-    vacancyId?: string;
-    status?: string;
-    isArchived?: boolean;
-  }): Promise<Candidate[]> {
-    const params = new URLSearchParams();
-    if (filters?.vacancyId) params.append('vacancyId', filters.vacancyId);
-    if (filters?.status) params.append('status', filters.status);
-    if (filters?.isArchived !== undefined) {
-      params.append('isArchived', String(filters.isArchived));
-    }
+    async getCandidateVacancyAnswers(candidate_id: number, vacancy_id: string): Promise<CandidateQuestionAnswer[]> {
+        return fetchAPI<CandidateQuestionAnswer[]>(`/api/v1/candidate/answers/${candidate_id}/${vacancy_id}`);
+    },
 
-    const query = params.toString() ? `?${params.toString()}` : '';
-    return fetchAPI<Candidate[]>(`/candidates${query}`);
-  },
-
-  async getCandidate(id: string): Promise<Candidate> {
-    return fetchAPI<Candidate>(`/candidates/${id}`);
-  },
-
-  async updateCandidateStatus(
-    id: string,
-    status: string
-  ): Promise<Candidate> {
-    return fetchAPI<Candidate>(`/candidates/${id}/status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status }),
-    });
-  },
-
-  async archiveCandidate(id: string): Promise<Candidate> {
-    return fetchAPI<Candidate>(`/candidates/${id}/archive`, {
-      method: 'PATCH',
-    });
-  },
-
-  async unarchiveCandidate(id: string): Promise<Candidate> {
-    return fetchAPI<Candidate>(`/candidates/${id}/unarchive`, {
-      method: 'PATCH',
-    });
-  },
-
-  // Аутентификация
-  async login(username: string, password: string): Promise<{ token: string }> {
-    return fetchAPI<{ token: string }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    });
-  },
-
-  async logout(): Promise<void> {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('isAuthenticated');
-  },
+    // Аутентификация
+    async login(username: string, password: string): Promise<{ token: string }> {
+        return fetchAPI<{ token: string }>('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({username, password}),
+        });
+    },
 };
-
-// Пример использования в компоненте:
-// 
-// import { api } from '../services/api';
-// 
-// const handleSubmit = async (e: React.FormEvent) => {
-//   e.preventDefault();
-//   try {
-//     const vacancy = await api.createVacancy({
-//       title,
-//       keySkills: skills,
-//       questions,
-//       botLink // Уникальная ссылка генерируется на фронте
-//     });
-//     console.log('Вакансия создана:', vacancy);
-//     navigate('/vacancies');
-//   } catch (error) {
-//     console.error('Ошибка создания вакансии:', error);
-//   }
-// };
-

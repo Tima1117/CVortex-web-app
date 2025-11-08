@@ -1,302 +1,471 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {
-  Box,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  IconButton,
-  Divider,
-  Chip,
-  Alert,
-  InputAdornment,
+    Alert,
+    Box,
+    Button,
+    Chip,
+    Divider,
+    IconButton,
+    InputAdornment,
+    Paper,
+    Snackbar,
+    TextField,
+    Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { Question } from '../types';
+import CloseIcon from '@mui/icons-material/Close';
+import {CreateVacancyRequest, Question} from '../types';
+import {api} from '../services/api';
 
-// Функция для генерации UUID v4
-const generateUUID = () => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+const TG_URL = import.meta.env.VITE_TG_URL;
+
+// Генератор ID для вопросов
+let questionIdCounter = 1;
+const generateQuestionId = (): number => {
+    return questionIdCounter++;
 };
 
-export default function CreateVacancy() {
-  const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [skillInput, setSkillInput] = useState('');
-  const [skills, setSkills] = useState<string[]>([]);
-  const [questions, setQuestions] = useState<Question[]>([
-    { id: '1', text: '', timeLimit: 60, expectedAnswer: '' }
-  ]);
-  const [botLink] = useState(`https://t.me/Human_resourse_bot?start=${generateUUID()}`);
-  const [showSuccess, setShowSuccess] = useState(false);
-
-  const handleAddSkill = () => {
-    if (skillInput.trim() && !skills.includes(skillInput.trim())) {
-      setSkills([...skills, skillInput.trim()]);
-      setSkillInput('');
+const generateUUID = (): string => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
     }
-  };
-
-  const handleDeleteSkill = (skillToDelete: string) => {
-    setSkills(skills.filter((skill) => skill !== skillToDelete));
-  };
-
-  const handleAddQuestion = () => {
-    const newQuestion: Question = {
-      id: String(questions.length + 1),
-      text: '',
-      timeLimit: 60,
-      expectedAnswer: ''
-    };
-    setQuestions([...questions, newQuestion]);
-  };
-
-  const handleDeleteQuestion = (id: string) => {
-    if (questions.length > 1) {
-      setQuestions(questions.filter((q) => q.id !== id));
-    }
-  };
-
-  const handleQuestionChange = (id: string, field: keyof Question, value: string | number) => {
-    setQuestions(questions.map((q) =>
-      q.id === id ? { ...q, [field]: value } : q
-    ));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Отправка данных на бэкенд
-    // Ссылка botLink генерируется на фронте и передается на бэк
-    // Бэкенд будет использовать UUID из ссылки для идентификации кандидата
-    // const vacancyData: CreateVacancyRequest = { title, keySkills: skills, questions, botLink };
-    // await fetch('/api/vacancies', { method: 'POST', body: JSON.stringify(vacancyData) });
-
-    console.log('Создание вакансии:', {
-      title,
-      keySkills: skills,
-      questions,
-      botLink // Уникальная ссылка: https://t.me/Human_resourse_bot?start={UUID}
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
     });
+};
 
-    setShowSuccess(true);
-    setTimeout(() => {
-      navigate('/vacancies');
-    }, 2000);
-  };
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(botLink);
-    // Можно добавить уведомление о копировании
-  };
-
-  const isFormValid = () => {
-    return title.trim() !== '' &&
-           skills.length > 0 &&
-           questions.every((q) => q.text.trim() !== '');
-  };
-
-  return (
-    <Box>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-        Создание новой вакансии
-      </Typography>
-
-      {showSuccess && (
-        <Alert severity="success" sx={{ mb: 3 }}>
-          Вакансия успешно создана! Перенаправление...
-        </Alert>
-      )}
-
-      <Paper elevation={3} sx={{ p: 3 }}>
-        <form onSubmit={handleSubmit}>
-          {/* Название вакансии */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Название вакансии *
-            </Typography>
-            <TextField
-              fullWidth
-              placeholder="Например: Frontend разработчик (React)"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
-          </Box>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* Ключевые навыки */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Ключевые пожелания к кандидату *
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Укажите навыки, технологии или требования к кандидату. Эта информация будет использоваться для анализа резюме.
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-              <TextField
-                fullWidth
-                placeholder="Например: React, TypeScript, 3+ года опыта"
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddSkill();
-                  }
-                }}
-              />
-              <Button
-                variant="contained"
-                onClick={handleAddSkill}
-                startIcon={<AddIcon />}
-              >
-                Добавить
-              </Button>
-            </Box>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {skills.map((skill) => (
-                <Chip
-                  key={skill}
-                  label={skill}
-                  onDelete={() => handleDeleteSkill(skill)}
-                  color="primary"
-                />
-              ))}
-            </Box>
-            {skills.length === 0 && (
-              <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
-                Добавьте хотя бы один навык
-              </Typography>
-            )}
-          </Box>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* Ссылка для Telegram бота */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Ссылка для кандидатов
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Уникальная ссылка для перехода в Telegram бота. Отправьте эту ссылку кандидатам для прохождения интервью.
-            </Typography>
-            <TextField
-              fullWidth
-              value={botLink}
-              InputProps={{
-                readOnly: true,
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={handleCopyLink}
-                      edge="end"
-                      title="Скопировать ссылку"
-                    >
-                      <ContentCopyIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Box>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* Вопросы для интервью */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-              Вопросы для интервью *
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Вопросы, которые бот будет задавать кандидату в Telegram
-            </Typography>
-            {questions.map((question, index) => (
-              <Paper key={question.id} variant="outlined" sx={{ p: 2, mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                      Вопрос {index + 1}
-                    </Typography>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={2}
-                      placeholder="Введите текст вопроса"
-                      value={question.text}
-                      onChange={(e) => handleQuestionChange(question.id, 'text', e.target.value)}
-                      required
-                      sx={{ mb: 2 }}
-                    />
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={2}
-                      label="Пожелание к ответу (опционально)"
-                      placeholder="Опишите, что вы ожидаете услышать в ответе на этот вопрос"
-                      value={question.expectedAnswer || ''}
-                      onChange={(e) => handleQuestionChange(question.id, 'expectedAnswer', e.target.value)}
-                      sx={{ mb: 2 }}
-                    />
-                    <TextField
-                      type="number"
-                      label="Время на ответ (секунды)"
-                      value={question.timeLimit}
-                      onChange={(e) => handleQuestionChange(question.id, 'timeLimit', parseInt(e.target.value))}
-                      inputProps={{ min: 30, max: 300 }}
-                      sx={{ width: 200 }}
-                    />
-                  </Box>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteQuestion(question.id)}
-                    disabled={questions.length === 1}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              </Paper>
-            ))}
-            <Button
-              variant="outlined"
-              startIcon={<AddIcon />}
-              onClick={handleAddQuestion}
-            >
-              Добавить вопрос
-            </Button>
-          </Box>
-
-          <Divider sx={{ my: 4 }} />
-
-          {/* Кнопки */}
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button
-              variant="outlined"
-              onClick={() => navigate('/vacancies')}
-            >
-              Отмена
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              startIcon={<SaveIcon />}
-              disabled={!isFormValid()}
-            >
-              Создать вакансию
-            </Button>
-          </Box>
-        </form>
-      </Paper>
-    </Box>
-  );
+// Сброс счетчика при горячей перезагрузке в development
+if (import.meta.env.DEV) {
+    if (import.meta.hot) {
+        import.meta.hot.dispose(() => {
+            questionIdCounter = 1;
+        });
+    }
 }
 
+export default function CreateVacancy() {
+    const navigate = useNavigate();
+    const [title, setTitle] = useState('');
+    const [skillInput, setSkillInput] = useState('');
+    const [skills, setSkills] = useState<string[]>([]);
+    const [questions, setQuestions] = useState<Question[]>([
+        {id: generateQuestionId(), content: '', time_limit: 60, reference: '', vacancy_id: '', position: 1}
+    ]);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [botLink, setBotLink] = useState('');
+    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
+
+    const showSnackbar = (message: string, severity: 'success' | 'error' = 'error') => {
+        setSnackbar({open: true, message, severity});
+    };
+
+    const handleCloseSnackbar = (_event?: React.SyntheticEvent | Event, reason?: string) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbar(prev => ({...prev, open: false}));
+    };
+
+    const handleAddSkill = (): void => {
+        const trimmedSkill = skillInput.trim();
+        if (trimmedSkill && !skills.includes(trimmedSkill)) {
+            setSkills(prev => [...prev, trimmedSkill]);
+            setSkillInput('');
+        } else if (skills.includes(trimmedSkill)) {
+            showSnackbar('Этот навык уже добавлен', 'error');
+        }
+    };
+
+    const handleDeleteSkill = (skillToDelete: string): void => {
+        setSkills(prev => prev.filter(skill => skill !== skillToDelete));
+    };
+
+    const handleAddQuestion = (): void => {
+        const newQuestion: Question = {
+            id: generateQuestionId(),
+            vacancy_id: '', // Будет установлено при создании вакансии
+            position: questions.length + 1,
+            content: '',
+            time_limit: 60,
+            reference: ''
+        };
+        setQuestions(prev => [...prev, newQuestion]);
+    };
+
+    const handleQuestionChange = (id: number, field: keyof Question, value: string | number): void => {
+        setQuestions(prev => prev.map(q =>
+            q.id === id ? {...q, [field]: value} : q
+        ));
+    };
+
+    const handleDeleteQuestion = (id: number): void => {
+        if (questions.length > 1) {
+            setQuestions(prev => prev.filter(q => q.id !== id));
+        } else {
+            showSnackbar('Должен остаться хотя бы один вопрос', 'error');
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+        e.preventDefault();
+
+        // Валидация формы
+        if (!title.trim()) {
+            showSnackbar('Название вакансии обязательно для заполнения', 'error');
+            return;
+        }
+
+        if (skills.length === 0) {
+            showSnackbar('Добавьте хотя бы один навык', 'error');
+            return;
+        }
+
+        const emptyQuestion = questions.find(q => !q.content.trim());
+        if (emptyQuestion) {
+            showSnackbar('Все вопросы должны содержать текст', 'error');
+            return;
+        }
+
+        const invalidTimeLimit = questions.find(q => q.time_limit < 30 || q.time_limit > 300);
+        if (invalidTimeLimit) {
+            showSnackbar('Время на ответ должно быть от 30 до 300 секунд', 'error');
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            const vacancyId = generateUUID();
+            const newBotLink = `${TG_URL}${vacancyId}`;
+
+            // Подготавливаем вопросы с правильными позициями
+            const preparedQuestions = questions.map((q, index) => ({
+                content: q.content.trim(),
+                reference: q.reference?.trim() || '',
+                time_limit: Math.max(30, Math.min(300, q.time_limit)), // Ограничиваем диапазон
+                position: index + 1
+            }));
+
+            const vacancyData: CreateVacancyRequest = {
+                id: vacancyId,
+                title: title.trim(),
+                key_requirements: skills,
+                questions: preparedQuestions
+            };
+
+            console.log('Отправка данных на бэкенд:', vacancyData);
+
+            const success = await api.createVacancy(vacancyData);
+
+            if (success) {
+                console.log('Вакансия успешно создана на бэкенде');
+                setBotLink(newBotLink);
+                setShowSuccess(true);
+                showSnackbar('Вакансия успешно создана!', 'success');
+
+                setTimeout(() => {
+                    navigate('/vacancies');
+                }, 2000);
+            } else {
+                throw new Error('Не удалось создать вакансию');
+            }
+
+        } catch (err) {
+            console.error('Ошибка при создании вакансии:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Произошла неизвестная ошибка';
+            showSnackbar(errorMessage, 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleCopyLink = (): void => {
+        if (botLink) {
+            navigator.clipboard.writeText(botLink)
+                .then(() => {
+                    showSnackbar('Ссылка скопирована в буфер обмена', 'success');
+                })
+                .catch(err => {
+                    console.error('Ошибка при копировании ссылки:', err);
+                    showSnackbar('Ошибка при копировании ссылки', 'error');
+                });
+        }
+    };
+
+    const isFormValid = (): boolean => {
+        return title.trim() !== '' &&
+            skills.length > 0 &&
+            questions.every(q => q.content.trim() !== '') &&
+            questions.every(q => q.time_limit >= 30 && q.time_limit <= 300);
+    };
+
+    return (
+        <Box>
+            <Typography variant="h4" gutterBottom sx={{fontWeight: 600, mb: 3}}>
+                Создание новой вакансии
+            </Typography>
+
+            {showSuccess && (
+                <Alert severity="success" sx={{mb: 3}}>
+                    Вакансия успешно создана! Перенаправление...
+                </Alert>
+            )}
+
+            <Paper elevation={3} sx={{p: 3}}>
+                <form onSubmit={handleSubmit}>
+                    {/* Название вакансии */}
+                    <Box sx={{mb: 4}}>
+                        <Typography variant="h6" gutterBottom sx={{fontWeight: 600}}>
+                            Название вакансии *
+                        </Typography>
+                        <TextField
+                            fullWidth
+                            placeholder="Например: Frontend разработчик (React)"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            error={!title.trim()}
+                            helperText={!title.trim() ? "Название вакансии обязательно" : ""}
+                            disabled={isLoading}
+                        />
+                    </Box>
+
+                    <Divider sx={{my: 4}}/>
+
+                    {/* Ключевые навыки */}
+                    <Box sx={{mb: 4}}>
+                        <Typography variant="h6" gutterBottom sx={{fontWeight: 600}}>
+                            Ключевые пожелания к кандидату *
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
+                            Укажите навыки, технологии или требования к кандидату. Эта информация будет использоваться
+                            для анализа резюме.
+                        </Typography>
+                        <Box sx={{display: 'flex', gap: 1, mb: 2}}>
+                            <TextField
+                                fullWidth
+                                placeholder="Например: React, TypeScript, 3+ года опыта"
+                                value={skillInput}
+                                onChange={(e) => setSkillInput(e.target.value)}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddSkill();
+                                    }
+                                }}
+                                disabled={isLoading}
+                            />
+                            <Button
+                                variant="contained"
+                                onClick={handleAddSkill}
+                                startIcon={<AddIcon/>}
+                                disabled={isLoading || !skillInput.trim()}
+                            >
+                                Добавить
+                            </Button>
+                        </Box>
+                        <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
+                            {skills.map((skill) => (
+                                <Chip
+                                    key={skill}
+                                    label={skill}
+                                    onDelete={() => handleDeleteSkill(skill)}
+                                    color="primary"
+                                    disabled={isLoading}
+                                />
+                            ))}
+                        </Box>
+                        {skills.length === 0 && (
+                            <Typography variant="caption" color="error" sx={{mt: 1, display: 'block'}}>
+                                Добавьте хотя бы один навык
+                            </Typography>
+                        )}
+                    </Box>
+
+                    <Divider sx={{my: 4}}/>
+
+                    {/* Ссылка для Telegram бота */}
+                    {botLink && (
+                        <>
+                            <Box sx={{mb: 4}}>
+                                <Typography variant="h6" gutterBottom sx={{fontWeight: 600}}>
+                                    Ссылка для кандидатов
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
+                                    Уникальная ссылка для перехода в Telegram бота. Отправьте эту ссылку кандидатам для
+                                    прохождения интервью.
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    value={botLink}
+                                    InputProps={{
+                                        readOnly: true,
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    onClick={handleCopyLink}
+                                                    edge="end"
+                                                    title="Скопировать ссылку"
+                                                    disabled={isLoading}
+                                                >
+                                                    <ContentCopyIcon/>
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                    disabled={isLoading}
+                                />
+                            </Box>
+                            <Divider sx={{my: 4}}/>
+                        </>
+                    )}
+
+                    {/* Вопросы для интервью */}
+                    <Box sx={{mb: 4}}>
+                        <Typography variant="h6" gutterBottom sx={{fontWeight: 600}}>
+                            Вопросы для интервью *
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
+                            Вопросы, которые бот будет задавать кандидату в Telegram
+                        </Typography>
+                        {questions.map((question, index) => (
+                            <Paper key={question.id} variant="outlined" sx={{p: 2, mb: 2}}>
+                                <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>
+                                    <Box sx={{flex: 1}}>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            mb: 1
+                                        }}>
+                                            <Typography variant="subtitle2">
+                                                Вопрос {index + 1}
+                                            </Typography>
+                                            {questions.length > 1 && (
+                                                <Button
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() => handleDeleteQuestion(question.id)}
+                                                    disabled={isLoading}
+                                                >
+                                                    Удалить
+                                                </Button>
+                                            )}
+                                        </Box>
+                                        <TextField
+                                            fullWidth
+                                            multiline
+                                            rows={2}
+                                            placeholder="Введите текст вопроса"
+                                            value={question.content}
+                                            onChange={(e) => handleQuestionChange(question.id, 'content', e.target.value)}
+                                            error={!question.content.trim()}
+                                            helperText={!question.content.trim() ? "Текст вопроса обязателен" : ""}
+                                            required
+                                            sx={{mb: 2}}
+                                            disabled={isLoading}
+                                        />
+                                        <TextField
+                                            fullWidth
+                                            multiline
+                                            rows={2}
+                                            label="Пожелание к ответу (опционально)"
+                                            placeholder="Опишите, что вы ожидаете услышать в ответе на этот вопрос"
+                                            value={question.reference || ''}
+                                            onChange={(e) => handleQuestionChange(question.id, 'reference', e.target.value)}
+                                            sx={{mb: 2}}
+                                            disabled={isLoading}
+                                        />
+                                        <TextField
+                                            type="number"
+                                            label="Время на ответ (секунды)"
+                                            value={question.time_limit}
+                                            onChange={(e) => handleQuestionChange(question.id, 'time_limit', parseInt(e.target.value) || 60)}
+                                            inputProps={{min: 30, max: 300, step: 10}}
+                                            error={question.time_limit < 30 || question.time_limit > 300}
+                                            helperText={question.time_limit < 30 || question.time_limit > 300 ? "Допустимый диапазон: 30-300 секунд" : ""}
+                                            sx={{width: 200}}
+                                            disabled={isLoading}
+                                        />
+                                    </Box>
+                                    <IconButton
+                                        color="error"
+                                        onClick={() => handleDeleteQuestion(question.id)}
+                                        disabled={questions.length === 1 || isLoading}
+                                    >
+                                        <DeleteIcon/>
+                                    </IconButton>
+                                </Box>
+                            </Paper>
+                        ))}
+                        <Button
+                            variant="outlined"
+                            startIcon={<AddIcon/>}
+                            onClick={handleAddQuestion}
+                            disabled={isLoading}
+                        >
+                            Добавить вопрос
+                        </Button>
+                    </Box>
+
+                    <Divider sx={{my: 4}}/>
+
+                    {/* Кнопки */}
+                    <Box sx={{display: 'flex', gap: 2, justifyContent: 'flex-end'}}>
+                        <Button
+                            variant="outlined"
+                            onClick={() => navigate('/vacancies')}
+                            disabled={isLoading}
+                        >
+                            Отмена
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            startIcon={<SaveIcon/>}
+                            disabled={!isFormValid() || isLoading}
+                        >
+                            {isLoading ? 'Создание...' : 'Создать вакансию'}
+                        </Button>
+                    </Box>
+                </form>
+            </Paper>
+
+            {/* Snackbar для уведомлений */}
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{vertical: 'top', horizontal: 'right'}}
+            >
+                <Alert
+                    onClose={handleCloseSnackbar}
+                    severity={snackbar.severity}
+                    sx={{width: '100%'}}
+                    action={
+                        <IconButton
+                            size="small"
+                            aria-label="close"
+                            color="inherit"
+                            onClick={handleCloseSnackbar}
+                        >
+                            <CloseIcon fontSize="small"/>
+                        </IconButton>
+                    }
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
+        </Box>
+    );
+}
