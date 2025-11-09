@@ -1,0 +1,41 @@
+services:
+#  hr-helper:
+#    container_name: hr-helper
+#    build:
+#      context: hr-helper
+#      dockerfile: Dockerfile
+#    env_file: hr-helper/prod.env
+#    restart: on-failure
+#    ports:
+#      - "8086:8086"
+
+  web-app:
+    container_name: web-app
+    build: .
+    env_file: .env
+    restart: on-failure
+    ports:
+      - "3000:3000"
+
+#  tg-bot:
+#    container_name: tg-bot
+#    build:
+#      context: HR_bot
+#      dockerfile: Dockerfile
+#    restart: on-failure
+#
+#  tika:
+#    image: apache/tika:latest
+#    restart: on-failure
+#    ports:
+#      - "9998:9998"
+
+#  keycloak:
+#    image: quay.io/keycloak/keycloak:latest
+#    environment:
+#      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+#      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+#      KC_HOSTNAME: localhost
+#    command: start-dev
+#    ports:
+#      - "8080:8080"

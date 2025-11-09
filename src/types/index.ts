@@ -1,98 +1,120 @@
 // Типы для работы с вакансиями и кандидатами
 
-export interface Vacancy {
-  id: string;
-  title: string;
-  keySkills: string[];
-  questions: Question[];
-  botLink: string; // Уникальная ссылка для перехода в Telegram бота
-  createdAt: Date;
-  isActive: boolean;
-}
-
-export interface Question {
-  id: string;
-  text: string;
-  timeLimit: number; // в секундах
-  expectedAnswer?: string; // пожелание к ответу для нейросети
-}
-
-export interface Candidate {
-  id: string;
-  fullName: string;
-  vacancyId: string;
-  vacancyTitle: string;
-  phoneNumber: string;
-  telegramNickname: string;
-  city: string;
-  status: CandidateStatus;
-  screeningScore: number | null; // баллы от 0 до 100
-  interviewScore: number | null; // баллы от 0 до 100
-  resumeUrl: string;
-  appliedAt: Date;
-  answers?: Answer[];
-  isArchived: boolean; // Архивирован ли кандидат
-}
-
-export interface Answer {
-  questionId: string;
-  questionText: string;
-  answer: string;
-  wasOnTime: boolean;
-  score?: number;
-}
-
-export enum CandidateStatus {
-  PENDING = 'pending', // Ожидает скрининга
-  SCREENING = 'screening', // Резюме анализируется
-  REJECTED_SCREENING = 'rejected_screening', // Отклонен на этапе скрининга
-  AWAITING_INTERVIEW = 'awaiting_interview', // Ожидает интервью
-  INTERVIEW_IN_PROGRESS = 'interview_in_progress', // Проходит интервью
-  INTERVIEW_COMPLETED = 'interview_completed', // Интервью завершено
-  REJECTED_INTERVIEW = 'rejected_interview', // Отклонен после интервью
-  APPROVED = 'approved' // Одобрен
+// Сначала определим типы
+export interface CreateQuestionRequest {
+    content: string;
+    reference: string;
+    time_limit: number;
 }
 
 export interface CreateVacancyRequest {
-  title: string;
-  keySkills: string[];
-  questions: Question[];
-  botLink: string;
+    id: string;
+    title: string;
+    key_requirements: string[];
+    questions: CreateQuestionRequest[];
 }
 
-// Утилитарные функции для статусов
-export const getStatusLabel = (status: CandidateStatus): string => {
-  const labels: Record<CandidateStatus, string> = {
-    [CandidateStatus.PENDING]: 'Ожидает',
-    [CandidateStatus.SCREENING]: 'Анализ резюме',
-    [CandidateStatus.REJECTED_SCREENING]: 'Отклонен (скрининг)',
-    [CandidateStatus.AWAITING_INTERVIEW]: 'Ожидает интервью',
-    [CandidateStatus.INTERVIEW_IN_PROGRESS]: 'Проходит интервью',
-    [CandidateStatus.INTERVIEW_COMPLETED]: 'Интервью завершено',
-    [CandidateStatus.REJECTED_INTERVIEW]: 'Отклонен (интервью)',
-    [CandidateStatus.APPROVED]: 'Одобрен'
-  };
-  return labels[status];
+export interface Question {
+    id: number;
+    vacancy_id: string;
+    content: string;
+    reference: string;
+    time_limit: number;
+    position: number;
+}
+
+export interface Vacancy {
+    id: string;
+    title: string;
+    key_requirements: string[];
+    questions: Question[];
+    created_at: Date;
+}
+
+
+export interface CandidateVacancyInfo {
+    candidate: Candidate;
+    vacancy: Vacancy;
+    meta: Meta;
+    resume_screening: ResumeScreening;
+}
+
+export interface ResumeScreening {
+    score: number;
+
+}
+
+export interface Candidate {
+    id: number;
+    telegram_id: string;
+    full_name: string;
+    phone: string;
+    city: string;
+    created_at: Date;
+}
+
+export interface Meta {
+    candidate_id: number;
+    vacancy_id: string;
+    status: string;
+    interview_score: number;
+    updated_at: Date;
+}
+
+export interface CandidateQuestionAnswer {
+    question: Question;
+    answer: Answer;
+}
+
+export interface Question {
+    id: number;
+    content: string;
+    reference: string;
+    time_limit: number;
+    position: number;
+}
+
+export interface Answer {
+    id: number;
+    content: string;
+    score: number;
+    time_taken: number;
+}
+
+export const getStatusLabel = (status: string): string => {
+    const statusLabels: Record<string, string> = {
+        'screening_ok': 'Скрининг резюме пройден',
+        'screening_failed': 'Скрининг резюме не пройден',
+        'interview_ok': 'Интервью пройдено',
+        'interview_failed': 'Интервью не пройдено',
+    };
+
+    return statusLabels[status] || status;
 };
 
-export const getStatusColor = (status: CandidateStatus): 'default' | 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success' => {
-  const colors: Record<CandidateStatus, 'default' | 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success'> = {
-    [CandidateStatus.PENDING]: 'default',
-    [CandidateStatus.SCREENING]: 'info',
-    [CandidateStatus.REJECTED_SCREENING]: 'error',
-    [CandidateStatus.AWAITING_INTERVIEW]: 'warning',
-    [CandidateStatus.INTERVIEW_IN_PROGRESS]: 'primary',
-    [CandidateStatus.INTERVIEW_COMPLETED]: 'secondary',
-    [CandidateStatus.REJECTED_INTERVIEW]: 'error',
-    [CandidateStatus.APPROVED]: 'success'
-  };
-  return colors[status];
+export const getStatusColor = (status: string): "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning" => {
+    const statusColors: Record<string, "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"> = {
+        'screening_ok': 'success',
+        'interview_ok': 'success',
+        'screening_failed': 'error',
+        'interview_failed': 'error',
+    };
+
+    return statusColors[status] || 'default';
 };
 
-export const getScoreColor = (score: number | null): string => {
-  if (score === null) return '#9e9e9e';
-  if (score >= 80) return '#4caf50'; // зеленый
-  if (score >= 60) return '#ff9800'; // оранжевый
-  return '#f44336'; // красный
+export const getScoreColor = (score: number): string => {
+    if (score >= 90) return '#4caf50'; // зеленый
+    if (score >= 70) return '#8bc34a'; // светло-зеленый
+    if (score >= 50) return '#ffc107'; // желтый
+    if (score >= 30) return '#ff9800'; // оранжевый
+    return '#f44336'; // красный
 };
+
+export enum CandidateStatus {
+    SCREENING_OK = 'screening_ok',
+    SCREENING_FAILED = 'screening_failed',
+    INTERVIEW_OK = 'interview_ok',
+    INTERVIEW_FAILED = 'interview_failed',
+}
 
