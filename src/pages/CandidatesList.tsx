@@ -94,6 +94,7 @@ export default function CandidatesList() {
         appliedAt: new Date(cv.candidate.created_at),
         screeningScore: cv.resume_screening.score,
         interviewScore: cv.meta.interview_score,
+        uniqueKey: `${cv.candidate.id}_${cv.vacancy.id}`,
     }));
 
     const statusOrder: Record<string, number> = {
@@ -159,8 +160,8 @@ export default function CandidatesList() {
         }
     };
 
-    const handleRowClick = (candidateId: number, vacancy_id: string) => {
-        navigate(`/candidates/${candidateId}/${vacancy_id}`);
+    const handleRowClick = (candidateId: number, vacancyId: string) => {
+        navigate(`/candidates/${candidateId}/${vacancyId}`);
     };
 
     const handleStatusFilterChange = (event: SelectChangeEvent) => {
@@ -304,7 +305,7 @@ export default function CandidatesList() {
                         ) : (
                             sortedCandidates.map((candidate) => (
                                 <TableRow
-                                    key={candidate.id}
+                                    key={candidate.uniqueKey}
                                     hover
                                     sx={{cursor: 'pointer'}}
                                 >

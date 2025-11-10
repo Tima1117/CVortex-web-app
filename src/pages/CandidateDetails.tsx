@@ -14,9 +14,10 @@ import {
     Grid,
     IconButton,
     LinearProgress,
+    Link,
     Paper,
     Snackbar,
-    Typography,
+    Typography
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -28,6 +29,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import GradingIcon from '@mui/icons-material/Grading';
+import FeedbackIcon from '@mui/icons-material/Feedback';
 import {CandidateQuestionAnswer, CandidateVacancyInfo, getScoreColor, getStatusColor, getStatusLabel} from '../types';
 import {api} from "../services/api.ts";
 
@@ -135,9 +137,8 @@ export default function CandidateDetails() {
         );
     }
 
-    const {candidate, vacancy, meta, resume_screening} = candidateData;
+    const {candidate, vacancy, meta, resume_screening, resume_link} = candidateData;
 
-    // FIX: Safe date formatting
     const formatDate = (dateString: Date) => {
         try {
             return new Date(dateString).toLocaleDateString('ru-RU');
@@ -246,7 +247,27 @@ export default function CandidateDetails() {
                                 <Typography variant="caption" color="text.secondary">
                                     Telegram
                                 </Typography>
-                                <Typography variant="body1">{candidate.telegram_id || 'Не указан'}</Typography>
+                                <Typography variant="body1">
+                                    {candidate.telegram_username ? (
+                                        <Link
+                                            href={`https://t.me/${candidate.telegram_username}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            sx={{
+                                                textDecoration: 'none',
+                                                color: 'primary.main',
+                                                '&:hover': {
+                                                    textDecoration: 'underline',
+                                                    color: 'primary.dark'
+                                                }
+                                            }}
+                                        >
+                                            {`https://t.me/${candidate.telegram_username}`}
+                                        </Link>
+                                    ) : (
+                                        'Не указан'
+                                    )}
+                                </Typography>
                             </Box>
                         </Box>
                     </Grid>
@@ -260,23 +281,17 @@ export default function CandidateDetails() {
                 </Typography>
                 <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                     <InsertDriveFileIcon sx={{fontSize: 40, color: 'primary.main'}}/>
-                    <Box>
-                        <Typography variant="body1">resume.pdf</Typography>
-                        {/* FIX: Add actual resume URL when available */}
-                        {/* {candidate.resume_url && (
-                            <Button
-                                variant="outlined"
-                                size="small"
-                                href={candidate.resume_url}
-                                target="_blank"
-                                sx={{ mt: 1 }}
-                            >
-                                Открыть резюме
-                            </Button>
-                        )} */}
-                    </Box>
+                    {resume_link && (
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            href={resume_link}
+                            target="_blank"
+                        >
+                            Скачать резюме
+                        </Button>
+                    )}
                 </Box>
-
                 <Divider sx={{my: 3}}/>
 
                 {/* Результаты скрининга и интервью */}
@@ -343,6 +358,33 @@ export default function CandidateDetails() {
                         </Card>
                     </Grid>
                 </Grid>
+
+                {/* Фидбек от LLM о резюме */}
+                {resume_screening?.feedback && (
+                    <>
+                        <Divider sx={{my: 3}}/>
+                        <Box>
+                            <Typography variant="h6" gutterBottom
+                                        sx={{fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center'}}>
+                                <FeedbackIcon sx={{mr: 1}}/>
+                                Результат скрининга резюме
+                            </Typography>
+                            <Card variant="outlined">
+                                <CardContent>
+                                    <Typography
+                                        variant="body1"
+                                        sx={{
+                                            whiteSpace: 'pre-wrap',
+                                            lineHeight: 1.6
+                                        }}
+                                    >
+                                        {resume_screening.feedback}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Box>
+                    </>
+                )}
 
                 {/* Ответы кандидата на вопросы */}
                 <Divider sx={{my: 3}}/>
