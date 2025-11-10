@@ -37,11 +37,12 @@ export interface CandidateVacancyInfo {
     vacancy: Vacancy;
     meta: Meta;
     resume_screening: ResumeScreening;
+    resume_link: string;
 }
 
 export interface ResumeScreening {
     score: number;
-
+    feedback: string;
 }
 
 export interface Candidate {
@@ -51,6 +52,7 @@ export interface Candidate {
     phone: string;
     city: string;
     created_at: Date;
+    telegram_username: string;
 }
 
 export interface Meta {
