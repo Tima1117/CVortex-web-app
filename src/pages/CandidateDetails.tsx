@@ -482,6 +482,31 @@ export default function CandidateDetails() {
                                             <Typography variant="body1" paragraph>
                                                 {item.question.content}
                                             </Typography>
+                                            {item.question.reference && (
+                                                <>
+                                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{mt: 2}}>
+                                                        Правильный ответ:
+                                                    </Typography>
+                                                    <Card
+                                                        variant="outlined"
+                                                        sx={{
+                                                            borderColor: 'success.main',
+                                                            p: 2,
+                                                            mb: 2
+                                                        }}
+                                                    >
+                                                        <Typography
+                                                            variant="body1"
+                                                            sx={{
+                                                                whiteSpace: 'pre-wrap',
+                                                                color: 'success.dark'
+                                                            }}
+                                                        >
+                                                            {item.question.reference}
+                                                        </Typography>
+                                                    </Card>
+                                                </>
+                                            )}
                                             <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
                                                 <Chip
                                                     label={`Лимит времени: ${formatTime(item.question.time_limit)}`}
