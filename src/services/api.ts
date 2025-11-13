@@ -1,4 +1,4 @@
-import {CandidateQuestionAnswer, CandidateVacancyInfo, CreateVacancyRequest, Vacancy} from '../types';
+import {CandidateQuestionAnswer, CandidateVacancyInfo, CreateVacancyRequest, Empty, Vacancy} from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
@@ -18,7 +18,13 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({message: 'Network error'}));
+        console.error(`[API] Error response:`, error);
         throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const contentLength = response.headers.get('content-length');
+    if (response.status === 204 || contentLength === '0') {
+        return null as T;
     }
 
     return response.json();
@@ -42,12 +48,23 @@ export const api = {
         return fetchAPI<Vacancy>(`/api/v1/vacancy/${vacancy_id}`);
     },
 
+    async deleteVacancyByID(vacancy_id: string): Promise<void> {
+        await fetchAPI<Empty>(`/api/v1/vacancy/${vacancy_id}`, {method: 'DELETE'});
+    },
+
     async getCandidateVacancies(): Promise<CandidateVacancyInfo[]> {
         return fetchAPI<CandidateVacancyInfo[]>(`/api/v1/candidate-vacancy-infos`);
     },
 
     async getCandidateVacancyByID(candidate_id: number, vacancy_id: string): Promise<CandidateVacancyInfo> {
         return fetchAPI<CandidateVacancyInfo>(`/api/v1/candidate-vacancy-info/${candidate_id}/${vacancy_id}`);
+    },
+
+    async archiveCandidateVacancy(candidate_id: number, vacancy_id: string): Promise<CandidateVacancyInfo[]> {
+        return fetchAPI<CandidateVacancyInfo[]>(`/api/v1/vacancy/archive`, {
+            method: 'POST',
+            body: JSON.stringify({candidate_id, vacancy_id}),
+        });
     },
 
     async getCandidateVacancyAnswers(candidate_id: number, vacancy_id: string): Promise<CandidateQuestionAnswer[]> {

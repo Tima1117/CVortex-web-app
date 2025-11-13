@@ -31,6 +31,7 @@ export interface Vacancy {
     created_at: Date;
 }
 
+export interface Empty {}
 
 export interface CandidateVacancyInfo {
     candidate: Candidate;
@@ -61,6 +62,7 @@ export interface Meta {
     status: string;
     interview_score: number;
     updated_at: Date;
+    is_archived: boolean;
 }
 
 export interface CandidateQuestionAnswer {

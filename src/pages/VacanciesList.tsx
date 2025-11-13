@@ -9,6 +9,7 @@ import {
     Chip,
     CircularProgress,
     Dialog,
+    DialogActions,
     DialogContent,
     DialogTitle,
     Divider,
@@ -24,6 +25,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import WorkIcon from '@mui/icons-material/Work';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {useEffect, useState} from 'react';
 import {Vacancy} from '../types';
 import {api} from '../services/api';
@@ -44,6 +46,8 @@ export default function VacanciesList() {
     const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [snackbar, setSnackbar] = useState<SnackbarState>({
         open: false,
         message: '',
@@ -106,6 +110,38 @@ export default function VacanciesList() {
     const handleCloseDialog = () => {
         setDialogOpen(false);
         setSelectedVacancy(null);
+    };
+
+    const handleDeleteClick = () => {
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleCloseDeleteConfirm = () => {
+        setDeleteConfirmOpen(false);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!selectedVacancy) return;
+
+        try {
+            setDeleting(true);
+            await api.deleteVacancyByID(selectedVacancy.id);
+
+            showSnackbar('Вакансия успешно удалена', 'success');
+            setDeleteConfirmOpen(false);
+            setDialogOpen(false);
+            setSelectedVacancy(null);
+
+            await fetchVacancies();
+        } catch (error) {
+            console.error('Ошибка при удалении вакансии:', error);
+            showSnackbar(
+                error instanceof Error ? error.message : 'Не удалось удалить вакансию',
+                'error'
+            );
+        } finally {
+            setDeleting(false);
+        }
     };
 
     // Функция для копирования ссылки
@@ -412,6 +448,58 @@ export default function VacanciesList() {
                         </Typography>
                     )}
                 </DialogContent>
+
+                <DialogActions sx={{p: 2, gap: 1}}>
+                    <Button
+                        startIcon={<DeleteIcon/>}
+                        onClick={handleDeleteClick}
+                        color="error"
+                        variant="outlined"
+                    >
+                        Удалить вакансию
+                    </Button>
+                    <Button
+                        onClick={handleCloseDialog}
+                        variant="contained"
+                    >
+                        Закрыть
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Диалог подтверждения удаления */}
+            <Dialog
+                open={deleteConfirmOpen}
+                onClose={deleting ? undefined : handleCloseDeleteConfirm}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>
+                    Подтверждение удаления
+                </DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Вы уверены, что хотите удалить вакансию "{selectedVacancy?.title}"?
+                        Это действие невозможно отменить.
+                    </Typography>
+                </DialogContent>
+                <DialogActions sx={{p: 2, gap: 1}}>
+                    <Button
+                        onClick={handleCloseDeleteConfirm}
+                        disabled={deleting}
+                    >
+                        Отмена
+                    </Button>
+                    <Button
+                        onClick={handleConfirmDelete}
+                        color="error"
+                        variant="contained"
+                        disabled={deleting}
+                        startIcon={deleting ? <CircularProgress size={16}/> : <DeleteIcon/>}
+                    >
+                        {deleting ? 'Удаление...' : 'Удалить'}
+                    </Button>
+                </DialogActions>
             </Dialog>
 
             {/* Snackbar для уведомлений */}
