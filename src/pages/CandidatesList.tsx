@@ -1,12 +1,19 @@
 import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
+import ArchiveIcon from '@mui/icons-material/Archive';
+import UnarchiveIcon from '@mui/icons-material/Unarchive';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {
     Alert,
     Box,
+    Checkbox,
     Chip,
+    CircularProgress,
     FormControl,
+    FormControlLabel,
     IconButton,
     InputLabel,
+    Menu,
     MenuItem,
     Paper,
     Select,
@@ -20,6 +27,7 @@ import {
     TableRow,
     TableSortLabel,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -35,10 +43,18 @@ interface SnackbarState {
     severity: 'success' | 'error' | 'warning' | 'info';
 }
 
+interface MenuState {
+    anchorEl: HTMLElement | null;
+    candidateId: number | null;
+    vacancyId: string | null;
+    isArchived: boolean | null;
+}
+
 export default function CandidatesList() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [showArchived, setShowArchived] = useState(false);
     const [candidateVacancies, setCandidateVacancies] = useState<CandidateVacancyInfo[]>([]);
     const [loading, setLoading] = useState(true);
     const [sortField, setSortField] = useState<SortField>('appliedAt');
@@ -48,24 +64,30 @@ export default function CandidatesList() {
         message: '',
         severity: 'info',
     });
+    const [menu, setMenu] = useState<MenuState>({
+        anchorEl: null,
+        candidateId: null,
+        vacancyId: null,
+        isArchived: null,
+    });
 
     // Загрузка данных из API
     useEffect(() => {
-        const loadCandidateVacancies = async () => {
-            try {
-                setLoading(true);
-                const data = await api.getCandidateVacancies();
-                setCandidateVacancies(data);
-            } catch (error) {
-                console.error('Ошибка при загрузке данных кандидатов:', error);
-                showSnackbar('Ошибка при загрузке данных кандидатов', 'error');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         loadCandidateVacancies();
     }, []);
+
+    const loadCandidateVacancies = async () => {
+        try {
+            setLoading(true);
+            const data = await api.getCandidateVacancies();
+            setCandidateVacancies(data);
+        } catch (error) {
+            console.error('Ошибка при загрузке данных кандидатов:', error);
+            showSnackbar('Ошибка при загрузке данных кандидатов', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const showSnackbar = (message: string, severity: SnackbarState['severity'] = 'info') => {
         setSnackbar({
@@ -82,6 +104,48 @@ export default function CandidatesList() {
         setSnackbar(prev => ({...prev, open: false}));
     };
 
+    // Функции для управления меню
+    const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, candidateId: number, vacancyId: string, isArchived: boolean) => {
+        event.stopPropagation();
+        setMenu({
+            anchorEl: event.currentTarget,
+            candidateId,
+            vacancyId,
+            isArchived,
+        });
+    };
+
+    const handleMenuClose = () => {
+        setMenu({
+            anchorEl: null,
+            candidateId: null,
+            vacancyId: null,
+            isArchived: null,
+        });
+    };
+
+    // Функция архивации/разархивации
+    const handleArchiveToggle = async (candidateId: number, vacancyId: string, isCurrentlyArchived: boolean) => {
+        try {
+            if (isCurrentlyArchived) {
+                // Разархивация - здесь нужно добавить соответствующий метод API
+                // await api.unarchiveCandidateVacancy(candidateId, vacancyId);
+                showSnackbar('Функционал разархивации пока не реализован', 'warning');
+            } else {
+                // Архивация
+                await api.archiveCandidateVacancy(candidateId, vacancyId);
+                showSnackbar('Кандидат успешно заархивирован', 'success');
+            }
+
+            handleMenuClose();
+
+            await loadCandidateVacancies();
+        } catch (error) {
+            console.error('Ошибка при архивации кандидата:', error);
+            showSnackbar('Ошибка при архивации кандидата', 'error');
+        }
+    };
+
     const uniqueStatuses = Array.from(
         new Set(candidateVacancies.map(cv => cv.meta.status))
     );
@@ -94,6 +158,7 @@ export default function CandidatesList() {
         appliedAt: new Date(cv.candidate.created_at),
         screeningScore: cv.resume_screening.score,
         interviewScore: cv.meta.interview_score,
+        isArchived: cv.meta.is_archived,
         uniqueKey: `${cv.candidate.id}_${cv.vacancy.id}`,
     }));
 
@@ -108,7 +173,9 @@ export default function CandidatesList() {
         const matchesSearch = candidate.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             candidate.vacancyTitle.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'all' || candidate.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        const matchesArchived = showArchived ? true : !candidate.isArchived;
+
+        return matchesSearch && matchesStatus && matchesArchived;
     });
 
     const sortedCandidates = [...filteredCandidates].sort((a, b) => {
@@ -161,11 +228,19 @@ export default function CandidatesList() {
     };
 
     const handleRowClick = (candidateId: number, vacancyId: string) => {
+        // if (isArchived) {
+        //     showSnackbar('Заархивированная запись недоступна для редактирования', 'warning'); // todo
+        //     return;
+        // }
         navigate(`/candidates/${candidateId}/${vacancyId}`);
     };
 
     const handleStatusFilterChange = (event: SelectChangeEvent) => {
         setStatusFilter(event.target.value);
+    };
+
+    const handleShowArchivedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setShowArchived(event.target.checked);
     };
 
     const renderScoreCell = (score: number | null) => {
@@ -191,8 +266,8 @@ export default function CandidatesList() {
 
     if (loading) {
         return (
-            <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400}}>
-                <Typography variant="h6">Загрузка данных...</Typography>
+            <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400}}>
+                <CircularProgress/>
             </Box>
         );
     }
@@ -205,7 +280,7 @@ export default function CandidatesList() {
 
             {/* Фильтры */}
             <Box sx={{mb: 3}}>
-                <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap'}}>
+                <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start'}}>
                     <TextField
                         label="Поиск по имени или вакансии"
                         variant="outlined"
@@ -228,6 +303,21 @@ export default function CandidatesList() {
                             ))}
                         </Select>
                     </FormControl>
+                    <Tooltip title={showArchived ? "Скрыть архивные" : "Показать архивные"}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={showArchived}
+                                    onChange={handleShowArchivedChange}
+                                    color="primary"
+                                    icon={<ArchiveIcon fontSize="small"/>}
+                                    checkedIcon={<ArchiveIcon fontSize="small"/>}
+                                />
+                            }
+                            label=""
+                            sx={{mt: 1, '& .MuiFormControlLabel-label': {display: 'none'}}}
+                        />
+                    </Tooltip>
                 </Box>
             </Box>
 
@@ -291,12 +381,15 @@ export default function CandidatesList() {
                                     Дата подачи
                                 </TableSortLabel>
                             </TableCell>
+                            <TableCell sx={{fontWeight: 600}} align="center">
+                                Действия
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {sortedCandidates.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} align="center">
+                                <TableCell colSpan={8} align="center">
                                     <Typography variant="body1" color="text.secondary" sx={{py: 4}}>
                                         Кандидаты не найдены
                                     </Typography>
@@ -307,34 +400,89 @@ export default function CandidatesList() {
                                 <TableRow
                                     key={candidate.uniqueKey}
                                     hover
-                                    sx={{cursor: 'pointer'}}
+                                    sx={{
+                                        cursor: candidate.isArchived ? 'default' : 'pointer',
+                                        bgcolor: candidate.isArchived ? 'action.hover' : 'inherit',
+                                        opacity: candidate.isArchived ? 0.6 : 1,
+                                        '&:hover': {
+                                            bgcolor: candidate.isArchived ? 'action.hover' : 'action.hover',
+                                        }
+                                    }}
                                 >
-                                    <TableCell onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}>
-                                        <Typography variant="body1" sx={{fontWeight: 500}}>
-                                            {candidate.full_name}
-                                        </Typography>
+                                    <TableCell
+                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                    >
+                                        <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                            <Typography
+                                                variant="body1"
+                                                sx={{
+                                                    fontWeight: 500,
+                                                    color: candidate.isArchived ? 'text.secondary' : 'text.primary'
+                                                }}
+                                            >
+                                                {candidate.full_name}
+                                            </Typography>
+                                            {candidate.isArchived && (
+                                                <Chip
+                                                    label="Архив"
+                                                    size="small"
+                                                    color="default"
+                                                    variant="outlined"
+                                                    sx={{ml: 1, fontSize: '0.7rem', height: 24}}
+                                                />
+                                            )}
+                                        </Box>
                                     </TableCell>
                                     <TableCell
-                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}>{candidate.vacancyTitle}</TableCell>
+                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                        sx={{color: candidate.isArchived ? 'text.secondary' : 'inherit'}}
+                                    >
+                                        {candidate.vacancyTitle}
+                                    </TableCell>
                                     <TableCell
-                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}>{candidate.city}</TableCell>
-                                    <TableCell onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}>
+                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                        sx={{color: candidate.isArchived ? 'text.secondary' : 'inherit'}}
+                                    >
+                                        {candidate.city}
+                                    </TableCell>
+                                    <TableCell
+                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                    >
                                         <Chip
                                             label={getStatusLabel(candidate.status)}
                                             color={getStatusColor(candidate.status)}
                                             size="small"
+                                            variant={candidate.isArchived ? "outlined" : "filled"}
+                                            sx={{
+                                                opacity: candidate.isArchived ? 0.7 : 1
+                                            }}
                                         />
                                     </TableCell>
-                                    <TableCell align="center"
-                                               onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}>
+                                    <TableCell
+                                        align="center"
+                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                    >
                                         {renderScoreCell(candidate.screeningScore)}
                                     </TableCell>
-                                    <TableCell align="center"
-                                               onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}>
+                                    <TableCell
+                                        align="center"
+                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                    >
                                         {renderScoreCell(candidate.interviewScore)}
                                     </TableCell>
-                                    <TableCell onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}>
+                                    <TableCell
+                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                        sx={{color: candidate.isArchived ? 'text.secondary' : 'inherit'}}
+                                    >
                                         {candidate.appliedAt.toLocaleDateString('ru-RU')}
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <IconButton
+                                            onClick={(e) => handleMenuOpen(e, candidate.id, candidate.vacancyID, candidate.isArchived)}
+                                            size="small"
+                                        >
+                                            <MoreVertIcon/>
+                                        </IconButton>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -343,9 +491,52 @@ export default function CandidatesList() {
                 </Table>
             </TableContainer>
 
+            {/* Меню действий */}
+            <Menu
+                anchorEl={menu.anchorEl}
+                open={Boolean(menu.anchorEl)}
+                onClose={handleMenuClose}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {menu.isArchived ? (
+                    <MenuItem
+                        onClick={() => {
+                            if (menu.candidateId && menu.vacancyId) {
+                                handleArchiveToggle(menu.candidateId, menu.vacancyId, true);
+                            }
+                        }}
+                        disabled // Заглушка для разархивации
+                    >
+                        <UnarchiveIcon sx={{mr: 1, fontSize: 20}}/>
+                        Разархивировать
+                    </MenuItem>
+                ) : (
+                    <MenuItem
+                        onClick={() => {
+                            if (menu.candidateId && menu.vacancyId) {
+                                handleArchiveToggle(menu.candidateId, menu.vacancyId, false);
+                            }
+                        }}
+                    >
+                        <ArchiveIcon sx={{mr: 1, fontSize: 20}}/>
+                        Архивировать
+                    </MenuItem>
+                )}
+                {/* Можно добавить другие пункты меню в будущем */}
+                {/* <MenuItem onClick={handleMenuClose}>
+                    <EditIcon sx={{ mr: 1, fontSize: 20 }} />
+                    Редактировать
+                </MenuItem> */}
+            </Menu>
+
             <Box sx={{mt: 2}}>
                 <Typography variant="body2" color="text.secondary">
                     Всего кандидатов: {sortedCandidates.length}
+                    {showArchived && (
+                        <span>
+                            {' '}(включая архивные: {candidates.filter(c => c.isArchived).length})
+                        </span>
+                    )}
                 </Typography>
             </Box>
 
