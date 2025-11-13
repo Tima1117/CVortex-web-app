@@ -63,7 +63,10 @@ export const api = {
     async archiveCandidateVacancy(candidate_id: number, vacancy_id: string): Promise<CandidateVacancyInfo[]> {
         return fetchAPI<CandidateVacancyInfo[]>(`/api/v1/vacancy/archive`, {
             method: 'POST',
-            body: JSON.stringify({candidate_id, vacancy_id}),
+            body: JSON.stringify({
+                id: vacancy_id,
+                candidate_id: candidate_id
+            }),
         });
     },
 
@@ -71,7 +74,7 @@ export const api = {
         return fetchAPI<CandidateQuestionAnswer[]>(`/api/v1/candidate/answers/${candidate_id}/${vacancy_id}`);
     },
 
-    // Аутентификация
+    // todo Аутентификация
     async login(username: string, password: string): Promise<{ token: string }> {
         return fetchAPI<{ token: string }>('/auth/login', {
             method: 'POST',

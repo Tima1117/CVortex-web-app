@@ -164,12 +164,9 @@ export default function CreateVacancy() {
                 questions: preparedQuestions
             };
 
-            console.log('Отправка данных на бэкенд:', vacancyData);
-
             const success = await api.createVacancy(vacancyData);
 
             if (success) {
-                console.log('Вакансия успешно создана на бэкенде');
                 setBotLink(newBotLink);
                 setShowSuccess(true);
                 showSnackbar('Вакансия успешно создана!', 'success');

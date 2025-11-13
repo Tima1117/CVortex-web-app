@@ -78,7 +78,7 @@ export default function VacanciesList() {
         } catch (error) {
             console.error('Ошибка при загрузке вакансий:', error);
             showSnackbar(
-                error instanceof Error ? error.message : 'Не удалось загрузить вакансии',
+                'Не удалось загрузить вакансии',
                 'error'
             );
         } finally {
@@ -95,7 +95,7 @@ export default function VacanciesList() {
         } catch (error) {
             console.error('Ошибка при загрузке деталей вакансии:', error);
             showSnackbar(
-                error instanceof Error ? error.message : 'Не удалось загрузить детали вакансии',
+                'Не удалось загрузить детали вакансии',
                 'error'
             );
         } finally {
@@ -136,7 +136,7 @@ export default function VacanciesList() {
         } catch (error) {
             console.error('Ошибка при удалении вакансии:', error);
             showSnackbar(
-                error instanceof Error ? error.message : 'Не удалось удалить вакансию',
+                'Не удалось удалить вакансию',
                 'error'
             );
         } finally {
