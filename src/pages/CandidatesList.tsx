@@ -50,6 +50,13 @@ interface MenuState {
     isArchived: boolean | null;
 }
 
+// Градиентная тема на основе логотипа
+const gradientTheme = {
+    primary: 'linear-gradient(135deg, #0088CC, #764ba2)',
+    light: 'linear-gradient(135deg, #e6f4ff, #f3e8ff)',
+    hover: 'linear-gradient(135deg, #0077b3, #6a4190)',
+};
+
 export default function CandidatesList() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
@@ -228,10 +235,6 @@ export default function CandidatesList() {
     };
 
     const handleRowClick = (candidateId: number, vacancyId: string) => {
-        // if (isArchived) {
-        //     showSnackbar('Заархивированная запись недоступна для редактирования', 'warning'); // todo
-        //     return;
-        // }
         navigate(`/candidates/${candidateId}/${vacancyId}`);
     };
 
@@ -253,10 +256,11 @@ export default function CandidatesList() {
                     display: 'inline-block',
                     px: 1.5,
                     py: 0.5,
-                    borderRadius: 3,
+                    borderRadius: 1,
                     bgcolor: getScoreColor(score),
                     color: 'white',
                     fontWeight: 600,
+                    fontSize: '0.875rem',
                 }}
             >
                 {score}
@@ -274,19 +278,52 @@ export default function CandidatesList() {
 
     return (
         <Box>
-            <Typography variant="h4" gutterBottom sx={{fontWeight: 600, mb: 3}}>
-                Кандидаты
-            </Typography>
+            {/* Заголовок страницы */}
+            <Box sx={{mb: 4}}>
+                <Typography
+                    variant="h4"
+                    gutterBottom
+                    sx={{
+                        fontWeight: 700,
+                        background: gradientTheme.primary,
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        color: 'transparent',
+                    }}
+                >
+                    Кандидаты
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                    Управление кандидатами и отслеживание процесса отбора
+                </Typography>
+            </Box>
 
             {/* Фильтры */}
-            <Box sx={{mb: 3}}>
+            <Paper
+                elevation={0}
+                sx={{
+                    p: 3,
+                    mb: 3,
+                    borderRadius: 1,
+                    background: 'white',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                }}
+            >
                 <Box sx={{display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start'}}>
                     <TextField
                         label="Поиск по имени или вакансии"
                         variant="outlined"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        sx={{flex: 1, minWidth: 250}}
+                        sx={{
+                            flex: 1,
+                            minWidth: 250,
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 1,
+                            },
+                        }}
                     />
                     <FormControl sx={{minWidth: 200}}>
                         <InputLabel>Статус</InputLabel>
@@ -294,6 +331,9 @@ export default function CandidatesList() {
                             value={statusFilter}
                             label="Статус"
                             onChange={handleStatusFilterChange}
+                            sx={{
+                                borderRadius: 1,
+                            }}
                         >
                             <MenuItem value="all">Все статусы</MenuItem>
                             {uniqueStatuses.map(status => (
@@ -312,21 +352,43 @@ export default function CandidatesList() {
                                     color="primary"
                                     icon={<ArchiveIcon fontSize="small"/>}
                                     checkedIcon={<ArchiveIcon fontSize="small"/>}
+                                    sx={{
+                                        '&.Mui-disabled': {
+                                            color: 'text.disabled',
+                                        },
+                                    }}
                                 />
                             }
                             label=""
-                            sx={{mt: 1, '& .MuiFormControlLabel-label': {display: 'none'}}}
+                            sx={{
+                                mt: 1,
+                                '& .MuiFormControlLabel-label': {display: 'none'},
+                                '&:hover': {
+                                    backgroundColor: gradientTheme.light,
+                                    borderRadius: 1,
+                                },
+                            }}
                         />
                     </Tooltip>
                 </Box>
-            </Box>
+            </Paper>
 
             {/* Таблица кандидатов */}
-            <TableContainer component={Paper} elevation={2}>
+            <TableContainer
+                component={Paper}
+                elevation={0}
+                sx={{
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    background: 'white',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                }}
+            >
                 <Table>
-                    <TableHead sx={{bgcolor: '#f5f5f5'}}>
-                        <TableRow>
-                            <TableCell sx={{fontWeight: 600}}>
+                    <TableHead>
+                        <TableRow sx={{bgcolor: 'grey.50'}}>
+                            <TableCell sx={{fontWeight: 600, py: 2}}>
                                 <TableSortLabel
                                     active={sortField === 'fullName' && sortOrder !== null}
                                     direction={sortField === 'fullName' && sortOrder ? sortOrder : 'asc'}
@@ -335,7 +397,7 @@ export default function CandidatesList() {
                                     ФИО
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell sx={{fontWeight: 600}}>
+                            <TableCell sx={{fontWeight: 600, py: 2}}>
                                 <TableSortLabel
                                     active={sortField === 'vacancyTitle' && sortOrder !== null}
                                     direction={sortField === 'vacancyTitle' && sortOrder ? sortOrder : 'asc'}
@@ -344,8 +406,8 @@ export default function CandidatesList() {
                                     Вакансия
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell sx={{fontWeight: 600}}>Город</TableCell>
-                            <TableCell sx={{fontWeight: 600}}>
+                            <TableCell sx={{fontWeight: 600, py: 2}}>Город</TableCell>
+                            <TableCell sx={{fontWeight: 600, py: 2}}>
                                 <TableSortLabel
                                     active={sortField === 'status' && sortOrder !== null}
                                     direction={sortField === 'status' && sortOrder ? sortOrder : 'asc'}
@@ -354,7 +416,7 @@ export default function CandidatesList() {
                                     Статус
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell sx={{fontWeight: 600}} align="center">
+                            <TableCell sx={{fontWeight: 600, py: 2}} align="center">
                                 <TableSortLabel
                                     active={sortField === 'screeningScore' && sortOrder !== null}
                                     direction={sortField === 'screeningScore' && sortOrder ? sortOrder : 'asc'}
@@ -363,7 +425,7 @@ export default function CandidatesList() {
                                     Скрининг
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell sx={{fontWeight: 600}} align="center">
+                            <TableCell sx={{fontWeight: 600, py: 2}} align="center">
                                 <TableSortLabel
                                     active={sortField === 'interviewScore' && sortOrder !== null}
                                     direction={sortField === 'interviewScore' && sortOrder ? sortOrder : 'asc'}
@@ -372,7 +434,7 @@ export default function CandidatesList() {
                                     Интервью
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell sx={{fontWeight: 600}}>
+                            <TableCell sx={{fontWeight: 600, py: 2}}>
                                 <TableSortLabel
                                     active={sortField === 'appliedAt' && sortOrder !== null}
                                     direction={sortField === 'appliedAt' && sortOrder ? sortOrder : 'asc'}
@@ -381,7 +443,7 @@ export default function CandidatesList() {
                                     Дата подачи
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell sx={{fontWeight: 600}} align="center">
+                            <TableCell sx={{fontWeight: 600, py: 2}} align="center">
                                 Действия
                             </TableCell>
                         </TableRow>
@@ -389,8 +451,8 @@ export default function CandidatesList() {
                     <TableBody>
                         {sortedCandidates.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={8} align="center">
-                                    <Typography variant="body1" color="text.secondary" sx={{py: 4}}>
+                                <TableCell colSpan={8} align="center" sx={{py: 4}}>
+                                    <Typography variant="body1" color="text.secondary">
                                         Кандидаты не найдены
                                     </Typography>
                                 </TableCell>
@@ -404,13 +466,15 @@ export default function CandidatesList() {
                                         cursor: candidate.isArchived ? 'default' : 'pointer',
                                         bgcolor: candidate.isArchived ? 'action.hover' : 'inherit',
                                         opacity: candidate.isArchived ? 0.6 : 1,
+                                        transition: 'all 0.2s ease',
                                         '&:hover': {
-                                            bgcolor: candidate.isArchived ? 'action.hover' : 'action.hover',
+                                            bgcolor: candidate.isArchived ? 'action.hover' : gradientTheme.light,
                                         }
                                     }}
                                 >
                                     <TableCell
                                         onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                        sx={{py: 2}}
                                     >
                                         <Box sx={{display: 'flex', alignItems: 'center'}}>
                                             <Typography
@@ -428,25 +492,37 @@ export default function CandidatesList() {
                                                     size="small"
                                                     color="default"
                                                     variant="outlined"
-                                                    sx={{ml: 1, fontSize: '0.7rem', height: 24}}
+                                                    sx={{
+                                                        ml: 1,
+                                                        fontSize: '0.7rem',
+                                                        height: 24,
+                                                        borderRadius: 1,
+                                                    }}
                                                 />
                                             )}
                                         </Box>
                                     </TableCell>
                                     <TableCell
                                         onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
-                                        sx={{color: candidate.isArchived ? 'text.secondary' : 'inherit'}}
+                                        sx={{
+                                            py: 2,
+                                            color: candidate.isArchived ? 'text.secondary' : 'inherit'
+                                        }}
                                     >
                                         {candidate.vacancyTitle}
                                     </TableCell>
                                     <TableCell
                                         onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
-                                        sx={{color: candidate.isArchived ? 'text.secondary' : 'inherit'}}
+                                        sx={{
+                                            py: 2,
+                                            color: candidate.isArchived ? 'text.secondary' : 'inherit'
+                                        }}
                                     >
                                         {candidate.city}
                                     </TableCell>
                                     <TableCell
                                         onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                        sx={{py: 2}}
                                     >
                                         <Chip
                                             label={getStatusLabel(candidate.status)}
@@ -454,32 +530,45 @@ export default function CandidatesList() {
                                             size="small"
                                             variant={candidate.isArchived ? "outlined" : "filled"}
                                             sx={{
-                                                opacity: candidate.isArchived ? 0.7 : 1
+                                                borderRadius: 1,
+                                                opacity: candidate.isArchived ? 0.7 : 1,
+                                                fontWeight: 500,
                                             }}
                                         />
                                     </TableCell>
                                     <TableCell
                                         align="center"
                                         onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                        sx={{py: 2}}
                                     >
                                         {renderScoreCell(candidate.screeningScore)}
                                     </TableCell>
                                     <TableCell
                                         align="center"
                                         onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
+                                        sx={{py: 2}}
                                     >
                                         {renderScoreCell(candidate.interviewScore)}
                                     </TableCell>
                                     <TableCell
                                         onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
-                                        sx={{color: candidate.isArchived ? 'text.secondary' : 'inherit'}}
+                                        sx={{
+                                            py: 2,
+                                            color: candidate.isArchived ? 'text.secondary' : 'inherit'
+                                        }}
                                     >
                                         {candidate.appliedAt.toLocaleDateString('ru-RU')}
                                     </TableCell>
-                                    <TableCell align="center">
+                                    <TableCell align="center" sx={{py: 2}}>
                                         <IconButton
                                             onClick={(e) => handleMenuOpen(e, candidate.id, candidate.vacancyID, candidate.isArchived)}
                                             size="small"
+                                            sx={{
+                                                '&:hover': {
+                                                    background: gradientTheme.light,
+                                                },
+                                                transition: 'all 0.2s ease',
+                                            }}
                                         >
                                             <MoreVertIcon/>
                                         </IconButton>
@@ -497,6 +586,12 @@ export default function CandidatesList() {
                 open={Boolean(menu.anchorEl)}
                 onClose={handleMenuClose}
                 onClick={(e) => e.stopPropagation()}
+                PaperProps={{
+                    sx: {
+                        borderRadius: 1,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    }
+                }}
             >
                 {menu.isArchived ? (
                     <MenuItem
@@ -506,6 +601,13 @@ export default function CandidatesList() {
                             }
                         }}
                         disabled // Заглушка для разархивации
+                        sx={{
+                            borderRadius: 0.5,
+                            m: 0.5,
+                            '&.Mui-disabled': {
+                                color: 'text.disabled',
+                            },
+                        }}
                     >
                         <UnarchiveIcon sx={{mr: 1, fontSize: 20}}/>
                         Разархивировать
@@ -517,16 +619,18 @@ export default function CandidatesList() {
                                 handleArchiveToggle(menu.candidateId, menu.vacancyId, false);
                             }
                         }}
+                        sx={{
+                            borderRadius: 0.5,
+                            m: 0.5,
+                            '&:hover': {
+                                background: gradientTheme.light,
+                            },
+                        }}
                     >
                         <ArchiveIcon sx={{mr: 1, fontSize: 20}}/>
                         Архивировать
                     </MenuItem>
                 )}
-                {/* Можно добавить другие пункты меню в будущем */}
-                {/* <MenuItem onClick={handleMenuClose}>
-                    <EditIcon sx={{ mr: 1, fontSize: 20 }} />
-                    Редактировать
-                </MenuItem> */}
             </Menu>
 
             <Box sx={{mt: 2}}>
@@ -550,7 +654,14 @@ export default function CandidatesList() {
                 <Alert
                     onClose={handleCloseSnackbar}
                     severity={snackbar.severity}
-                    sx={{width: '100%'}}
+                    sx={{
+                        width: '100%',
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: snackbar.severity === 'success' ? 'success.light' :
+                            snackbar.severity === 'error' ? 'error.light' :
+                                snackbar.severity === 'warning' ? 'warning.light' : 'info.light',
+                    }}
                     action={
                         <IconButton
                             size="small"

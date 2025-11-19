@@ -39,6 +39,13 @@ interface SnackbarState {
     severity: 'success' | 'error' | 'warning' | 'info';
 }
 
+// Градиентная тема на основе логотипа
+const gradientTheme = {
+    primary: 'linear-gradient(135deg, #0088CC, #764ba2)',
+    light: 'linear-gradient(135deg, #e6f4ff, #f3e8ff)',
+    hover: 'linear-gradient(135deg, #0077b3, #6a4190)',
+};
+
 export default function CandidateDetails() {
     const {id, vacancyId} = useParams<{ id: string; vacancyId: string }>();
     const navigate = useNavigate();
@@ -125,11 +132,26 @@ export default function CandidateDetails() {
     if (!candidateData) {
         return (
             <Box sx={{p: 3}}>
-                <Alert severity="error">Кандидат не найден</Alert>
+                <Alert
+                    severity="error"
+                    sx={{
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: 'error.light',
+                    }}
+                >
+                    Кандидат не найден
+                </Alert>
                 <Button
                     startIcon={<ArrowBackIcon/>}
                     onClick={() => navigate('/candidates')}
-                    sx={{mt: 2}}
+                    sx={{
+                        mt: 2,
+                        borderRadius: 1,
+                        '&:hover': {
+                            background: gradientTheme.light,
+                        },
+                    }}
                 >
                     Вернуться к списку
                 </Button>
@@ -154,16 +176,52 @@ export default function CandidateDetails() {
     const totalTimeTaken = answers.reduce((sum, item) => sum + (item.answer?.time_taken || 0), 0);
 
     return (
-        <Box sx={{p: 3}}>
-            <Button
-                startIcon={<ArrowBackIcon/>}
-                onClick={() => navigate('/candidates')}
-                sx={{mb: 3}}
-            >
-                Назад к списку
-            </Button>
+        <Box>
+            {/* Заголовок страницы */}
+            <Box sx={{mb: 4}}>
+                <Button
+                    startIcon={<ArrowBackIcon/>}
+                    onClick={() => navigate('/candidates')}
+                    sx={{
+                        mb: 2,
+                        color: 'text.secondary',
+                        '&:hover': {
+                            background: gradientTheme.light,
+                            color: 'primary.main',
+                        },
+                        transition: 'all 0.2s ease',
+                    }}
+                >
+                    Назад к списку кандидатов
+                </Button>
+                <Typography
+                    variant="h4"
+                    gutterBottom
+                    sx={{
+                        fontWeight: 700,
+                        background: gradientTheme.primary,
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        color: 'transparent',
+                    }}
+                >
+                    Детали кандидата
+                </Typography>
+            </Box>
 
-            <Paper elevation={3} sx={{p: 3, mb: 3}}>
+            <Paper
+                elevation={0}
+                sx={{
+                    p: 4,
+                    mb: 3,
+                    borderRadius: 1,
+                    background: 'white',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                }}
+            >
+                {/* Заголовок и статус */}
                 <Box sx={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -173,81 +231,86 @@ export default function CandidateDetails() {
                     gap: 2
                 }}>
                     <Box>
-                        <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1, flexWrap: 'wrap'}}>
-                            <Typography variant="h4" sx={{fontWeight: 600, fontSize: {xs: '1.75rem', md: '2.125rem'}}}>
-                                {candidate.full_name}
-                            </Typography>
-                        </Box>
+                        <Typography variant="h4"
+                                    sx={{fontWeight: 600, fontSize: {xs: '1.75rem', md: '2.125rem'}, mb: 1}}>
+                            {candidate.full_name}
+                        </Typography>
                         <Chip
                             label={getStatusLabel(meta.status)}
                             color={getStatusColor(meta.status)}
                             size="medium"
+                            sx={{
+                                borderRadius: 1,
+                                fontWeight: 600,
+                            }}
                         />
                     </Box>
                     <Box sx={{textAlign: {xs: 'left', md: 'right'}}}>
                         <Typography variant="caption" color="text.secondary">
                             Дата подачи заявки
                         </Typography>
-                        <Typography variant="body1" sx={{mb: 1}}>
+                        <Typography variant="body1" sx={{mb: 1, fontWeight: 500}}>
                             {formatDate(candidate.created_at)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                             Последнее обновление
                         </Typography>
-                        <Typography variant="body1">
+                        <Typography variant="body1" sx={{fontWeight: 500}}>
                             {formatDate(meta.updated_at)}
                         </Typography>
                     </Box>
                 </Box>
 
-                <Divider sx={{my: 3}}/>
+                <Divider sx={{my: 3, borderColor: 'divider'}}/>
 
                 {/* Личные данные */}
-                <Typography variant="h6" gutterBottom sx={{fontWeight: 600, mb: 2}}>
+                <Typography variant="h6" gutterBottom sx={{fontWeight: 600, mb: 3}}>
                     Личные данные
                 </Typography>
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={6}>
                         <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                            <WorkIcon sx={{mr: 1.5, color: 'text.secondary'}}/>
+                            <WorkIcon sx={{mr: 1.5, color: 'primary.main'}}/>
                             <Box>
                                 <Typography variant="caption" color="text.secondary">
                                     Вакансия
                                 </Typography>
-                                <Typography variant="body1">{vacancy.title}</Typography>
+                                <Typography variant="body1" sx={{fontWeight: 500}}>{vacancy.title}</Typography>
                             </Box>
                         </Box>
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                            <LocationOnIcon sx={{mr: 1.5, color: 'text.secondary'}}/>
+                            <LocationOnIcon sx={{mr: 1.5, color: 'primary.main'}}/>
                             <Box>
                                 <Typography variant="caption" color="text.secondary">
                                     Город проживания
                                 </Typography>
-                                <Typography variant="body1">{candidate.city || 'Не указан'}</Typography>
+                                <Typography variant="body1"
+                                            sx={{fontWeight: 500}}>{candidate.city || 'Не указан'}</Typography>
                             </Box>
                         </Box>
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                            <PhoneIcon sx={{mr: 1.5, color: 'text.secondary'}}/>
+                            <PhoneIcon sx={{mr: 1.5, color: 'primary.main'}}/>
                             <Box>
                                 <Typography variant="caption" color="text.secondary">
                                     Номер телефона
                                 </Typography>
-                                <Typography variant="body1">{candidate.phone || 'Не указан'}</Typography>
+                                <Typography variant="body1"
+                                            sx={{fontWeight: 500}}>{candidate.phone || 'Не указан'}</Typography>
                             </Box>
                         </Box>
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                            <TelegramIcon sx={{mr: 1.5, color: 'text.secondary'}}/>
+                            <TelegramIcon sx={{mr: 1.5, color: 'primary.main'}}/>
                             <Box>
                                 <Typography variant="caption" color="text.secondary">
                                     Telegram
                                 </Typography>
-                                <Typography variant="body1">
+                                <Typography variant="body1" sx={{fontWeight: 500}}>
                                     {candidate.telegram_username ? (
                                         <Link
                                             href={`https://t.me/${candidate.telegram_username}`}
@@ -256,6 +319,7 @@ export default function CandidateDetails() {
                                             sx={{
                                                 textDecoration: 'none',
                                                 color: 'primary.main',
+                                                fontWeight: 500,
                                                 '&:hover': {
                                                     textDecoration: 'underline',
                                                     color: 'primary.dark'
@@ -273,7 +337,7 @@ export default function CandidateDetails() {
                     </Grid>
                 </Grid>
 
-                <Divider sx={{my: 3}}/>
+                <Divider sx={{my: 3, borderColor: 'divider'}}/>
 
                 {/* Резюме */}
                 <Typography variant="h6" gutterBottom sx={{fontWeight: 600, mb: 2}}>
@@ -287,20 +351,40 @@ export default function CandidateDetails() {
                             size="small"
                             href={resume_link}
                             target="_blank"
+                            sx={{
+                                borderRadius: 1,
+                                borderColor: 'primary.main',
+                                color: 'primary.main',
+                                '&:hover': {
+                                    background: gradientTheme.light,
+                                    borderColor: 'primary.main',
+                                },
+                            }}
                         >
                             Скачать резюме
                         </Button>
                     )}
                 </Box>
-                <Divider sx={{my: 3}}/>
+
+                <Divider sx={{my: 3, borderColor: 'divider'}}/>
 
                 {/* Результаты скрининга и интервью */}
-                <Typography variant="h6" gutterBottom sx={{fontWeight: 600, mb: 2}}>
+                <Typography variant="h6" gutterBottom sx={{fontWeight: 600, mb: 3}}>
                     Результаты оценки
                 </Typography>
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={6}>
-                        <Card variant="outlined">
+                        <Card
+                            variant="outlined"
+                            sx={{
+                                borderRadius: 1,
+                                borderColor: 'divider',
+                                transition: 'all 0.2s ease',
+                                '&:hover': {
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                },
+                            }}
+                        >
                             <CardContent>
                                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                                     Скрининг резюме
@@ -311,7 +395,7 @@ export default function CandidateDetails() {
                                             display: 'inline-block',
                                             px: 2,
                                             py: 1,
-                                            borderRadius: 3,
+                                            borderRadius: 1,
                                             bgcolor: getScoreColor(resume_screening.score),
                                             color: 'white',
                                             fontSize: 24,
@@ -329,7 +413,17 @@ export default function CandidateDetails() {
                         </Card>
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <Card variant="outlined">
+                        <Card
+                            variant="outlined"
+                            sx={{
+                                borderRadius: 1,
+                                borderColor: 'divider',
+                                transition: 'all 0.2s ease',
+                                '&:hover': {
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                },
+                            }}
+                        >
                             <CardContent>
                                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                                     Результаты интервью
@@ -340,7 +434,7 @@ export default function CandidateDetails() {
                                             display: 'inline-block',
                                             px: 2,
                                             py: 1,
-                                            borderRadius: 3,
+                                            borderRadius: 1,
                                             bgcolor: getScoreColor(meta.interview_score),
                                             color: 'white',
                                             fontSize: 24,
@@ -362,14 +456,20 @@ export default function CandidateDetails() {
                 {/* Фидбек от LLM о резюме */}
                 {resume_screening?.feedback && (
                     <>
-                        <Divider sx={{my: 3}}/>
+                        <Divider sx={{my: 3, borderColor: 'divider'}}/>
                         <Box>
                             <Typography variant="h6" gutterBottom
                                         sx={{fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center'}}>
-                                <FeedbackIcon sx={{mr: 1}}/>
+                                <FeedbackIcon sx={{mr: 1, color: 'primary.main'}}/>
                                 Результат скрининга резюме
                             </Typography>
-                            <Card variant="outlined">
+                            <Card
+                                variant="outlined"
+                                sx={{
+                                    borderRadius: 1,
+                                    borderColor: 'divider',
+                                }}
+                            >
                                 <CardContent>
                                     <Typography
                                         variant="body1"
@@ -387,9 +487,9 @@ export default function CandidateDetails() {
                 )}
 
                 {/* Ответы кандидата на вопросы */}
-                <Divider sx={{my: 3}}/>
+                <Divider sx={{my: 3, borderColor: 'divider'}}/>
 
-                <Typography variant="h6" gutterBottom sx={{fontWeight: 600, mb: 2}}>
+                <Typography variant="h6" gutterBottom sx={{fontWeight: 600, mb: 3}}>
                     Ответы на вопросы интервью
                 </Typography>
 
@@ -403,7 +503,14 @@ export default function CandidateDetails() {
                 ) : answers.length > 0 ? (
                     <Box>
                         {/* Общая статистика по ответам */}
-                        <Card sx={{mb: 3, bgcolor: 'background.default'}}>
+                        <Card
+                            sx={{
+                                mb: 3,
+                                background: gradientTheme.light,
+                                borderRadius: 1,
+                                border: 'none',
+                            }}
+                        >
                             <CardContent>
                                 <Grid container spacing={3}>
                                     <Grid item xs={12} sm={4}>
@@ -448,10 +555,28 @@ export default function CandidateDetails() {
 
                         {/* Список вопросов и ответов */}
                         {answers.map((item, index) => (
-                            <Accordion key={item.question.id} sx={{mb: 2}}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
+                            <Accordion
+                                key={item.question.id}
+                                sx={{
+                                    mb: 2,
+                                    borderRadius: '1px !important',
+                                    '&:before': {display: 'none'},
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    boxShadow: 'none',
+                                }}
+                            >
+                                <AccordionSummary
+                                    expandIcon={<ExpandMoreIcon/>}
+                                    sx={{
+                                        borderRadius: '1px !important',
+                                        '&:hover': {
+                                            background: gradientTheme.light,
+                                        },
+                                    }}
+                                >
                                     <Box sx={{display: 'flex', alignItems: 'center', width: '100%'}}>
-                                        <Typography variant="h6" sx={{flex: 1}}>
+                                        <Typography variant="h6" sx={{flex: 1, fontWeight: 600}}>
                                             Вопрос {index + 1}: {item.question.content}
                                         </Typography>
                                         <Box sx={{display: 'flex', alignItems: 'center', gap: 2, ml: 2}}>
@@ -461,6 +586,10 @@ export default function CandidateDetails() {
                                                     label={`${item.answer.score}%`}
                                                     color={item.answer.score >= 70 ? 'success' : item.answer.score >= 40 ? 'warning' : 'error'}
                                                     variant="outlined"
+                                                    sx={{
+                                                        borderRadius: 1,
+                                                        fontWeight: 600,
+                                                    }}
                                                 />
                                             )}
                                             {item.answer?.time_taken !== undefined && (
@@ -468,23 +597,29 @@ export default function CandidateDetails() {
                                                     icon={<AccessTimeIcon/>}
                                                     label={formatTime(item.answer.time_taken)}
                                                     variant="outlined"
+                                                    sx={{
+                                                        borderRadius: 1,
+                                                        fontWeight: 600,
+                                                    }}
                                                 />
                                             )}
                                         </Box>
                                     </Box>
                                 </AccordionSummary>
-                                <AccordionDetails>
+                                <AccordionDetails sx={{borderTop: '1px solid', borderColor: 'divider'}}>
                                     <Grid container spacing={3}>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                            <Typography variant="subtitle2" color="text.secondary" gutterBottom
+                                                        sx={{fontWeight: 600}}>
                                                 Вопрос:
                                             </Typography>
-                                            <Typography variant="body1" paragraph>
+                                            <Typography variant="body1" paragraph sx={{fontWeight: 500}}>
                                                 {item.question.content}
                                             </Typography>
                                             {item.question.reference && (
                                                 <>
-                                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{mt: 2}}>
+                                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom
+                                                                sx={{mt: 2, fontWeight: 600}}>
                                                         Правильный ответ:
                                                     </Typography>
                                                     <Card
@@ -492,14 +627,17 @@ export default function CandidateDetails() {
                                                         sx={{
                                                             borderColor: 'success.main',
                                                             p: 2,
-                                                            mb: 2
+                                                            mb: 2,
+                                                            borderRadius: 1,
+                                                            background: 'success.light',
                                                         }}
                                                     >
                                                         <Typography
                                                             variant="body1"
                                                             sx={{
                                                                 whiteSpace: 'pre-wrap',
-                                                                color: 'success.dark'
+                                                                color: 'success.dark',
+                                                                fontWeight: 500,
                                                             }}
                                                         >
                                                             {item.question.reference}
@@ -512,15 +650,18 @@ export default function CandidateDetails() {
                                                     label={`Лимит времени: ${formatTime(item.question.time_limit)}`}
                                                     size="small"
                                                     variant="outlined"
+                                                    sx={{borderRadius: 1}}
                                                 />
                                             </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                            <Typography variant="subtitle2" color="text.secondary" gutterBottom
+                                                        sx={{fontWeight: 600}}>
                                                 Ответ кандидата:
                                             </Typography>
                                             {item.answer?.content ? (
-                                                <Typography variant="body1" sx={{whiteSpace: 'pre-wrap'}}>
+                                                <Typography variant="body1"
+                                                            sx={{whiteSpace: 'pre-wrap', fontWeight: 500}}>
                                                     {item.answer.content}
                                                 </Typography>
                                             ) : (
@@ -534,12 +675,14 @@ export default function CandidateDetails() {
                                                         icon={<GradingIcon/>}
                                                         label={`Оценка: ${item.answer.score}%`}
                                                         color={item.answer.score >= 70 ? 'success' : item.answer.score >= 40 ? 'warning' : 'error'}
+                                                        sx={{borderRadius: 1, fontWeight: 600}}
                                                     />
                                                 )}
                                                 {item.answer?.time_taken !== undefined && (
                                                     <Chip
                                                         icon={<AccessTimeIcon/>}
                                                         label={`Затрачено времени: ${formatTime(item.answer.time_taken)}`}
+                                                        sx={{borderRadius: 1, fontWeight: 600}}
                                                     />
                                                 )}
                                             </Box>
@@ -550,7 +693,13 @@ export default function CandidateDetails() {
                         ))}
                     </Box>
                 ) : (
-                    <Card>
+                    <Card
+                        sx={{
+                            borderRadius: 1,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                        }}
+                    >
                         <CardContent sx={{textAlign: 'center', py: 4}}>
                             <GradingIcon sx={{fontSize: 48, color: 'text.secondary', mb: 2}}/>
                             <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -574,7 +723,14 @@ export default function CandidateDetails() {
                 <Alert
                     onClose={handleCloseSnackbar}
                     severity={snackbar.severity}
-                    sx={{width: '100%'}}
+                    sx={{
+                        width: '100%',
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: snackbar.severity === 'success' ? 'success.light' :
+                            snackbar.severity === 'error' ? 'error.light' :
+                                snackbar.severity === 'warning' ? 'warning.light' : 'info.light',
+                    }}
                     action={
                         <IconButton
                             size="small"

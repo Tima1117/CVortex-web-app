@@ -18,6 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {CreateVacancyRequest, Question} from '../types';
 import {api} from '../services/api';
 
@@ -48,6 +49,13 @@ if (import.meta.env.DEV) {
         });
     }
 }
+
+// Градиентная тема на основе логотипа
+const gradientTheme = {
+    primary: 'linear-gradient(135deg, #0088CC, #764ba2)',
+    light: 'linear-gradient(135deg, #e6f4ff, #f3e8ff)',
+    hover: 'linear-gradient(135deg, #0077b3, #6a4190)',
+};
 
 export default function CreateVacancy() {
     const navigate = useNavigate();
@@ -209,21 +217,73 @@ export default function CreateVacancy() {
 
     return (
         <Box>
-            <Typography variant="h4" gutterBottom sx={{fontWeight: 600, mb: 3}}>
-                Создание новой вакансии
-            </Typography>
+            {/* Заголовок страницы */}
+            <Box sx={{mb: 4}}>
+                <Button
+                    startIcon={<ArrowBackIcon/>}
+                    onClick={() => navigate('/vacancies')}
+                    sx={{
+                        mb: 2,
+                        color: 'text.secondary',
+                        '&:hover': {
+                            background: gradientTheme.light,
+                            color: 'primary.main',
+                        },
+                        '&:disabled': {
+                            color: 'text.disabled',
+                        },
+                        transition: 'all 0.2s ease',
+                    }}
+                >
+                    Назад к вакансиям
+                </Button>
+                <Typography
+                    variant="h4"
+                    gutterBottom
+                    sx={{
+                        fontWeight: 700,
+                        background: gradientTheme.primary,
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        color: 'transparent',
+                    }}
+                >
+                    Создание новой вакансии
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                    Заполните информацию о вакансии и настройте вопросы для интервью
+                </Typography>
+            </Box>
 
             {showSuccess && (
-                <Alert severity="success" sx={{mb: 3}}>
+                <Alert
+                    severity="success"
+                    sx={{
+                        mb: 3,
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: 'success.light',
+                    }}
+                >
                     Вакансия успешно создана! Перенаправление...
                 </Alert>
             )}
 
-            <Paper elevation={3} sx={{p: 3}}>
+            <Paper
+                elevation={0}
+                sx={{
+                    p: 3,
+                    borderRadius: 1,
+                    background: 'white',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                }}
+            >
                 <form onSubmit={handleSubmit}>
                     {/* Название вакансии */}
                     <Box sx={{mb: 4}}>
-                        <Typography variant="h6" gutterBottom sx={{fontWeight: 600}}>
+                        <Typography variant="h6" gutterBottom sx={{fontWeight: 600, color: 'text.primary'}}>
                             Название вакансии *
                         </Typography>
                         <TextField
@@ -234,17 +294,25 @@ export default function CreateVacancy() {
                             error={!title.trim()}
                             helperText={!title.trim() ? "Название вакансии обязательно" : ""}
                             disabled={isLoading}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 1,
+                                    '&:hover fieldset': {
+                                        borderColor: 'primary.main',
+                                    },
+                                },
+                            }}
                         />
                     </Box>
 
-                    <Divider sx={{my: 4}}/>
+                    <Divider sx={{my: 4, borderColor: 'divider'}}/>
 
                     {/* Ключевые навыки */}
                     <Box sx={{mb: 4}}>
-                        <Typography variant="h6" gutterBottom sx={{fontWeight: 600}}>
+                        <Typography variant="h6" gutterBottom sx={{fontWeight: 600, color: 'text.primary'}}>
                             Ключевые пожелания к кандидату *
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
+                        <Typography variant="body2" color="text.secondary" sx={{mb: 3}}>
                             Укажите навыки, технологии или требования к кандидату. Эта информация будет использоваться
                             для анализа резюме.
                         </Typography>
@@ -261,12 +329,40 @@ export default function CreateVacancy() {
                                     }
                                 }}
                                 disabled={isLoading}
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: 1,
+                                    },
+                                }}
                             />
                             <Button
                                 variant="contained"
                                 onClick={handleAddSkill}
                                 startIcon={<AddIcon/>}
                                 disabled={isLoading || !skillInput.trim()}
+                                sx={{
+                                    borderRadius: 1,
+                                    background: skillInput.trim() ? gradientTheme.primary : 'white',
+                                    color: skillInput.trim() ? 'white' : 'primary.main',
+                                    border: skillInput.trim() ? 'none' : '2px solid',
+                                    borderColor: skillInput.trim() ? 'transparent' : gradientTheme.primary,
+                                    '&:hover': {
+                                        background: skillInput.trim() ? gradientTheme.hover : gradientTheme.light,
+                                        transform: skillInput.trim() ? 'translateY(-1px)' : 'none',
+                                        borderColor: skillInput.trim() ? 'transparent' : gradientTheme.hover,
+                                        boxShadow: skillInput.trim() ? '0 4px 12px rgba(0, 136, 204, 0.3)' : 'none',
+                                    },
+                                    '&:disabled': {
+                                        background: 'white',
+                                        color: 'text.disabled',
+                                        borderColor: 'grey.300',
+                                        transform: 'none',
+                                        boxShadow: 'none',
+                                    },
+                                    transition: 'all 0.2s ease',
+                                    minWidth: '120px',
+                                    fontWeight: 600,
+                                }}
                             >
                                 Добавить
                             </Button>
@@ -277,7 +373,20 @@ export default function CreateVacancy() {
                                     key={skill}
                                     label={skill}
                                     onDelete={() => handleDeleteSkill(skill)}
-                                    color="primary"
+                                    sx={{
+                                        background: gradientTheme.light,
+                                        color: 'primary.main',
+                                        fontWeight: 500,
+                                        borderRadius: 1,
+                                        '&:hover': {
+                                            background: gradientTheme.primary,
+                                            color: 'white',
+                                        },
+                                        '&:disabled': {
+                                            color: 'text.disabled',
+                                        },
+                                        transition: 'all 0.2s ease',
+                                    }}
                                     disabled={isLoading}
                                 />
                             ))}
@@ -289,13 +398,13 @@ export default function CreateVacancy() {
                         )}
                     </Box>
 
-                    <Divider sx={{my: 4}}/>
+                    <Divider sx={{my: 4, borderColor: 'divider'}}/>
 
                     {/* Ссылка для Telegram бота */}
                     {botLink && (
                         <>
                             <Box sx={{mb: 4}}>
-                                <Typography variant="h6" gutterBottom sx={{fontWeight: 600}}>
+                                <Typography variant="h6" gutterBottom sx={{fontWeight: 600, color: 'text.primary'}}>
                                     Ссылка для кандидатов
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
@@ -314,6 +423,15 @@ export default function CreateVacancy() {
                                                     edge="end"
                                                     title="Скопировать ссылку"
                                                     disabled={isLoading}
+                                                    sx={{
+                                                        color: 'primary.main',
+                                                        '&:hover': {
+                                                            background: gradientTheme.light,
+                                                        },
+                                                        '&:disabled': {
+                                                            color: 'text.disabled',
+                                                        },
+                                                    }}
                                                 >
                                                     <ContentCopyIcon/>
                                                 </IconButton>
@@ -321,31 +439,51 @@ export default function CreateVacancy() {
                                         ),
                                     }}
                                     disabled={isLoading}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 1,
+                                        },
+                                    }}
                                 />
                             </Box>
-                            <Divider sx={{my: 4}}/>
+                            <Divider sx={{my: 4, borderColor: 'divider'}}/>
                         </>
                     )}
 
                     {/* Вопросы для интервью */}
                     <Box sx={{mb: 4}}>
-                        <Typography variant="h6" gutterBottom sx={{fontWeight: 600}}>
+                        <Typography variant="h6" gutterBottom sx={{fontWeight: 600, color: 'text.primary'}}>
                             Вопросы для интервью *
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
+                        <Typography variant="body2" color="text.secondary" sx={{mb: 3}}>
                             Вопросы, которые бот будет задавать кандидату в Telegram
                         </Typography>
                         {questions.map((question, index) => (
-                            <Paper key={question.id} variant="outlined" sx={{p: 2, mb: 2}}>
+                            <Paper
+                                key={question.id}
+                                variant="outlined"
+                                sx={{
+                                    p: 2,
+                                    mb: 2,
+                                    borderRadius: 1,
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    background: 'white',
+                                    '&:hover': {
+                                        boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+                                    },
+                                    transition: 'all 0.2s ease',
+                                }}
+                            >
                                 <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>
                                     <Box sx={{flex: 1}}>
                                         <Box sx={{
                                             display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            mb: 1
+                                            mb: 2
                                         }}>
-                                            <Typography variant="subtitle2">
+                                            <Typography variant="subtitle2" sx={{fontWeight: 600}}>
                                                 Вопрос {index + 1}
                                             </Typography>
                                             {questions.length > 1 && (
@@ -354,6 +492,14 @@ export default function CreateVacancy() {
                                                     color="error"
                                                     onClick={() => handleDeleteQuestion(question.id)}
                                                     disabled={isLoading}
+                                                    startIcon={<DeleteIcon/>}
+                                                    sx={{
+                                                        borderRadius: 1,
+                                                        textTransform: 'none',
+                                                        '&:disabled': {
+                                                            color: 'text.disabled',
+                                                        },
+                                                    }}
                                                 >
                                                     Удалить
                                                 </Button>
@@ -395,13 +541,6 @@ export default function CreateVacancy() {
                                             disabled={isLoading}
                                         />
                                     </Box>
-                                    <IconButton
-                                        color="error"
-                                        onClick={() => handleDeleteQuestion(question.id)}
-                                        disabled={questions.length === 1 || isLoading}
-                                    >
-                                        <DeleteIcon/>
-                                    </IconButton>
                                 </Box>
                             </Paper>
                         ))}
@@ -410,6 +549,21 @@ export default function CreateVacancy() {
                             startIcon={<AddIcon/>}
                             onClick={handleAddQuestion}
                             disabled={isLoading}
+                            sx={{
+                                borderRadius: 1,
+                                borderColor: 'primary.main',
+                                color: 'primary.main',
+                                '&:hover': {
+                                    background: gradientTheme.light,
+                                    borderColor: 'primary.main',
+                                    transform: 'translateY(-1px)',
+                                },
+                                '&:disabled': {
+                                    borderColor: 'grey.300',
+                                    color: 'text.disabled',
+                                },
+                                transition: 'all 0.2s ease',
+                            }}
                         >
                             Добавить вопрос
                         </Button>
@@ -423,6 +577,23 @@ export default function CreateVacancy() {
                             variant="outlined"
                             onClick={() => navigate('/vacancies')}
                             disabled={isLoading}
+                            sx={{
+                                borderRadius: 1,
+                                px: 3,
+                                py: 1,
+                                borderColor: 'divider',
+                                color: 'text.secondary',
+                                '&:hover': {
+                                    borderColor: 'primary.main',
+                                    color: 'primary.main',
+                                    background: gradientTheme.light,
+                                },
+                                '&:disabled': {
+                                    borderColor: 'grey.300',
+                                    color: 'text.disabled',
+                                },
+                                transition: 'all 0.2s ease',
+                            }}
                         >
                             Отмена
                         </Button>
@@ -431,6 +602,30 @@ export default function CreateVacancy() {
                             variant="contained"
                             startIcon={<SaveIcon/>}
                             disabled={!isFormValid() || isLoading}
+                            sx={{
+                                borderRadius: 1,
+                                px: 3,
+                                py: 1,
+                                background: isFormValid() && !isLoading ? gradientTheme.primary : 'white',
+                                color: isFormValid() && !isLoading ? 'white' : 'primary.main',
+                                border: '2px solid',
+                                borderColor: isFormValid() && !isLoading ? 'transparent' : gradientTheme.primary,
+                                '&:hover': {
+                                    background: isFormValid() && !isLoading ? gradientTheme.hover : gradientTheme.light,
+                                    transform: isFormValid() && !isLoading ? 'translateY(-1px)' : 'none',
+                                    borderColor: isFormValid() && !isLoading ? 'transparent' : gradientTheme.hover,
+                                    boxShadow: isFormValid() && !isLoading ? '0 4px 12px rgba(0, 136, 204, 0.3)' : 'none',
+                                },
+                                '&:disabled': {
+                                    background: 'white',
+                                    color: 'text.disabled',
+                                    borderColor: 'grey.300',
+                                    transform: 'none',
+                                    boxShadow: 'none',
+                                },
+                                transition: 'all 0.2s ease',
+                                fontWeight: 600,
+                            }}
                         >
                             {isLoading ? 'Создание...' : 'Создать вакансию'}
                         </Button>
@@ -448,7 +643,12 @@ export default function CreateVacancy() {
                 <Alert
                     onClose={handleCloseSnackbar}
                     severity={snackbar.severity}
-                    sx={{width: '100%'}}
+                    sx={{
+                        width: '100%',
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: snackbar.severity === 'success' ? 'success.light' : 'error.light',
+                    }}
                     action={
                         <IconButton
                             size="small"
