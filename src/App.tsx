@@ -1,4 +1,4 @@
-import {Navigate, Route, Routes} from 'react-router-dom';
+import {Route, Routes} from 'react-router-dom';
 import {createTheme, ThemeProvider} from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Layout from './components/Layout';
@@ -142,7 +142,6 @@ function App() {
                         <ProtectedRoute>
                             <Layout>
                                 <Routes>
-                                    <Route path="/" element={<Navigate to="/candidates" replace/>}/>
                                     <Route path="/candidates" element={<CandidatesList/>}/>
                                     <Route path="/candidates/:id/:vacancyId" element={<CandidateDetails/>}/>
                                     <Route path="/vacancies" element={<VacanciesList/>}/>
