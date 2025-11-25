@@ -162,7 +162,7 @@ export default function CandidatesList() {
         vacancyTitle: cv.vacancy.title,
         vacancyID: cv.vacancy.id,
         status: cv.meta.status,
-        appliedAt: new Date(cv.candidate.created_at),
+        appliedAt: new Date(cv.resume_screening.created_at),
         screeningScore: cv.resume_screening.score,
         interviewScore: cv.meta.interview_score,
         isArchived: cv.meta.is_archived,

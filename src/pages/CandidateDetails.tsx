@@ -250,7 +250,7 @@ export default function CandidateDetails() {
                             Дата подачи заявки
                         </Typography>
                         <Typography variant="body1" sx={{mb: 1, fontWeight: 500}}>
-                            {formatDate(candidate.created_at)}
+                            {formatDate(resume_screening.created_at)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                             Последнее обновление

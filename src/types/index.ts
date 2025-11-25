@@ -44,6 +44,7 @@ export interface CandidateVacancyInfo {
 export interface ResumeScreening {
     score: number;
     feedback: string;
+    created_at: Date;
 }
 
 export interface Candidate {
