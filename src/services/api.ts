@@ -81,4 +81,73 @@ export const api = {
             body: JSON.stringify({username, password}),
         });
     },
+
+    // ========== Новые методы для массового скрининга ==========
+
+    /**
+     * Создание кандидата
+     * @returns Promise с объектом кандидата (содержит id)
+     * @param fullName
+     */
+    async createCandidate(fullName: string): Promise<{ id: number }> {
+        const apiData = {
+            telegram_id: "",
+            full_name: fullName,
+            phone: "",
+            city: "",
+            telegram_username: "",
+        };
+
+        return fetchAPI<{ id: number }>('/api/bot/v1/candidate', {
+            method: 'POST',
+            body: JSON.stringify(apiData),
+        });
+    },
+
+    /**
+     * Запуск процесса скрининга для кандидата и вакансии
+     * POST /api/bot/v1/screening/process
+     */
+    async processScreening(candidateId: number, vacancyId: string): Promise<void> {
+        await fetchAPI<void>('/api/bot/v1/screening/process', {
+            method: 'POST',
+            body: JSON.stringify({
+                candidate_id: candidateId,
+                vacancy_id: vacancyId,
+            }),
+        });
+    },
+
+
+    async uploadResume(candidateId: number, vacancyId: string, file: File): Promise<void> {
+        // 1. Получаем presigned URL для загрузки
+        const presignedData = await fetchAPI<{
+            upload_url: string
+        }>('/api/v1/candidates/upload-url', {
+            method: 'POST',
+            body: JSON.stringify({
+                candidate_id: candidateId,
+                vacancy_id: vacancyId,
+            }),
+        });
+
+        // 2. Загружаем файл по presigned URL
+        // Предполагаем, что используется PUT-запрос (наиболее частый случай для S3)
+        const uploadResponse = await fetch(presignedData.upload_url, {
+            method: 'PUT',
+            body: file,
+            headers: {
+                'Content-Type': file.type,
+            },
+        });
+
+        if (!uploadResponse.ok) {
+            // Если сервер возвращает детали ошибки, можно попытаться прочитать
+            const errorText = await uploadResponse.text().catch(() => 'No error details');
+            throw new Error(`Failed to upload file: ${uploadResponse.status} ${uploadResponse.statusText} - ${errorText}`);
+        }
+
+        // При необходимости можно обработать успешный ответ (например, вернуть что-то)
+        return;
+    }
 };

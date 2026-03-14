@@ -21,6 +21,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import WorkIcon from '@mui/icons-material/Work';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import FilterAltIcon from '@mui/icons-material/FilterAlt'; // <-- импорт для массового скрининга
 
 const drawerWidth = 280;
 
@@ -43,18 +44,17 @@ export default function Layout({children}: LayoutProps) {
     };
 
     const handleProfile = () => {
-        // Заглушка для перехода в аккаунт
         console.log('Переход в аккаунт');
-        // В будущем можно добавить: navigate('/profile');
     };
 
+    // Добавлен пункт "Массовый скрининг"
     const menuItems = [
         {text: 'Кандидаты', icon: <PeopleIcon/>, path: '/candidates'},
+        {text: 'Массовый скрининг', icon: <FilterAltIcon/>, path: '/mass-screening'},
         {text: 'Вакансии', icon: <WorkIcon/>, path: '/vacancies'},
         {text: 'Создать вакансию', icon: <AddCircleIcon/>, path: '/vacancies/create'},
     ];
 
-    // Градиентная тема на основе логотипа
     const gradientTheme = {
         primary: 'linear-gradient(135deg, #0088CC, #764ba2)',
         light: 'linear-gradient(135deg, #e6f4ff, #f3e8ff)',
@@ -229,7 +229,6 @@ export default function Layout({children}: LayoutProps) {
 
                     <Box sx={{flexGrow: 1}}/>
 
-                    {/* Кнопка аккаунта без меню - просто заглушка */}
                     <IconButton
                         onClick={handleProfile}
                         sx={{
@@ -262,9 +261,7 @@ export default function Layout({children}: LayoutProps) {
                     variant="temporary"
                     open={mobileOpen}
                     onClose={handleDrawerToggle}
-                    ModalProps={{
-                        keepMounted: true,
-                    }}
+                    ModalProps={{keepMounted: true}}
                     sx={{
                         display: {xs: 'block', sm: 'none'},
                         '& .MuiDrawer-paper': {

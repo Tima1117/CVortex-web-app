@@ -8,6 +8,7 @@ import CandidatesList from './pages/CandidatesList';
 import CandidateDetails from './pages/CandidateDetails';
 import CreateVacancy from './pages/CreateVacancy';
 import VacanciesList from './pages/VacanciesList';
+import MassScreening from "./pages/MassScreening.tsx";
 
 // Создаем тему с поддержкой русского языка и мягкими углами
 const theme = createTheme({
@@ -146,6 +147,7 @@ function App() {
                                     <Route path="/candidates/:id/:vacancyId" element={<CandidateDetails/>}/>
                                     <Route path="/vacancies" element={<VacanciesList/>}/>
                                     <Route path="/vacancies/create" element={<CreateVacancy/>}/>
+                                    <Route path="/mass-screening" element={<MassScreening/>}/>
                                 </Routes>
                             </Layout>
                         </ProtectedRoute>
