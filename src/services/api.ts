@@ -91,11 +91,7 @@ export const api = {
      */
     async createCandidate(fullName: string): Promise<{ id: number }> {
         const apiData = {
-            telegram_id: "",
             full_name: fullName,
-            phone: "",
-            city: "",
-            telegram_username: "",
         };
 
         return fetchAPI<{ id: number }>('/api/bot/v1/candidate', {
