@@ -655,10 +655,10 @@ export default function CandidatesList() {
                                 gap: 2
                             }}>
                                 <Box>
-                                    <Typography variant="h4"
-                                                sx={{fontWeight: 600, fontSize: {xs: '1.5rem', md: '2rem'}, mb: 1}}>
+                                    <Typography variant="h5" sx={{fontWeight: 600}}>
                                         {selectedCandidate.candidate.full_name}
                                     </Typography>
+                                    <Box sx={{my: 1}}/>
                                     <Chip
                                         label={getStatusLabel(selectedCandidate.meta.status)}
                                         color={getStatusColor(selectedCandidate.meta.status)}
