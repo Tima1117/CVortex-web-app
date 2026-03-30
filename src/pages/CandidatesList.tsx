@@ -810,9 +810,40 @@ export default function CandidatesList() {
                             <Box sx={{my: 3}}/>
 
                             {/* Ответы на вопросы */}
-                            <Typography variant="subtitle1" gutterBottom sx={{fontWeight: 600, mb: 2}}>
-                                Ответы на вопросы интервью
-                            </Typography>
+                            <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 2}}>
+                                <Typography variant="subtitle1" sx={{fontWeight: 600}}>
+                                    Ответы на вопросы интервью
+                                </Typography>
+                                {!answersLoading && answers.length > 0 && (
+                                    <Box sx={{display: 'flex', gap: 2}}>
+                                        <Box sx={{display: 'flex', alignItems: 'baseline', gap: 0.5}}>
+                                            <Typography variant="body2" color="primary.main" fontWeight={700}>
+                                                {totalAnswers}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                вопросов
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{display: 'flex', alignItems: 'baseline', gap: 0.5}}>
+                                            <Typography variant="body2"
+                                                        sx={{color: getScoreColor(averageScore), fontWeight: 700}}>
+                                                {averageScore}%
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                ср. балл
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{display: 'flex', alignItems: 'baseline', gap: 0.5}}>
+                                            <Typography variant="body2" color="secondary.main" fontWeight={700}>
+                                                {formatTime(totalTimeTaken)}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                время
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                )}
+                            </Box>
 
                             {answersLoading ? (
                                 <Box sx={{textAlign: 'center', py: 2}}>
@@ -821,33 +852,7 @@ export default function CandidatesList() {
                                 </Box>
                             ) : answers.length > 0 ? (
                                 <Box>
-                                    {/* Статистика */}
-                                    <Card sx={{mb: 3, background: gradientTheme.light, borderRadius: 1}}>
-                                        <CardContent>
-                                            <Grid container spacing={2}>
-                                                <Grid item xs={4} sx={{textAlign: 'center'}}>
-                                                    <Typography variant="h5" color="primary.main"
-                                                                fontWeight={700}>{totalAnswers}</Typography>
-                                                    <Typography variant="caption" color="text.secondary">Всего
-                                                        вопросов</Typography>
-                                                </Grid>
-                                                <Grid item xs={4} sx={{textAlign: 'center'}}>
-                                                    <Typography variant="h5" sx={{
-                                                        color: getScoreColor(averageScore),
-                                                        fontWeight: 700
-                                                    }}>{averageScore}%</Typography>
-                                                    <Typography variant="caption" color="text.secondary">Средний
-                                                        балл</Typography>
-                                                </Grid>
-                                                <Grid item xs={4} sx={{textAlign: 'center'}}>
-                                                    <Typography variant="h5" color="secondary.main"
-                                                                fontWeight={700}>{formatTime(totalTimeTaken)}</Typography>
-                                                    <Typography variant="caption" color="text.secondary">Общее
-                                                        время</Typography>
-                                                </Grid>
-                                            </Grid>
-                                        </CardContent>
-                                    </Card>
+
 
                                     {/* Аккордеоны с ответами */}
                                     {answers.map((item, index) => (
