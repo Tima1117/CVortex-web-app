@@ -320,9 +320,9 @@ export default function CreateVacancy() {
                                 startIcon={<AddIcon/>}
                                 disabled={isLoading || !skillInput.trim()}
                                 sx={{
-                                    color: 'primary.main',
+                                    color: 'theme.primary',
                                     textTransform: 'none',
-                                    fontWeight: 600,
+                                    fontWeight: 500,
                                 }}
                             >
                                 Добавить
@@ -525,30 +525,6 @@ export default function CreateVacancy() {
 
                     {/* Кнопки */}
                     <Box sx={{display: 'flex', gap: 1.5, justifyContent: 'flex-end'}}>  {/* was gap:2 */}
-                        <Button
-                            variant="outlined"
-                            onClick={() => navigate('/vacancies')}
-                            disabled={isLoading}
-                            sx={{
-                                borderRadius: 1,
-                                px: 2.5,  // was px:3
-                                py: 0.75, // was py:1
-                                borderColor: 'divider',
-                                color: 'text.secondary',
-                                '&:hover': {
-                                    borderColor: 'primary.main',
-                                    color: 'primary.main',
-                                    background: gradientTheme.light,
-                                },
-                                '&:disabled': {
-                                    borderColor: 'grey.300',
-                                    color: 'text.disabled',
-                                },
-                                transition: 'all 0.2s ease',
-                            }}
-                        >
-                            Отмена
-                        </Button>
                         <Button
                             type="submit"
                             variant="contained"
