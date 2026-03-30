@@ -418,8 +418,8 @@ export default function VacanciesList() {
                             </Box>
 
                             {/* Ключевые навыки */}
-                            <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1}}>
-                                Ключевые навыки:
+                            <Typography variant="subtitle1" sx={{fontWeight: 600, mb: 1}}>
+                                Ключевые навыки
                             </Typography>
                             <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 3}}>
                                 {(selectedVacancy.key_requirements || []).map((skill) => (
@@ -444,8 +444,8 @@ export default function VacanciesList() {
                             </Box>
 
                             {/* Вопросы для интервью */}
-                            <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1}}>
-                                Вопросы для интервью:
+                            <Typography variant="subtitle1" sx={{fontWeight: 600, mb: 1}}>
+                                Вопросы для интервью
                             </Typography>
                             {selectedVacancy.questions && selectedVacancy.questions.length > 0 ? (
                                 <List dense sx={{mb: 3}}>
@@ -501,8 +501,8 @@ export default function VacanciesList() {
                             )}
 
                             {/* Ссылка для кандидатов */}
-                            <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1}}>
-                                Ссылка для кандидатов:
+                            <Typography variant="subtitle1" sx={{fontWeight: 600, mb: 1}}>
+                                Ссылка для кандидатов
                             </Typography>
                             <Tooltip
                                 title={copyTooltip || "Копировать ссылку"}

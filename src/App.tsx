@@ -5,7 +5,6 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import CandidatesList from './pages/CandidatesList';
-import CandidateDetails from './pages/CandidateDetails';
 import CreateVacancy from './pages/CreateVacancy';
 import VacanciesList from './pages/VacanciesList';
 import MassScreening from "./pages/MassScreening.tsx";
@@ -144,7 +143,6 @@ function App() {
                             <Layout>
                                 <Routes>
                                     <Route path="/candidates" element={<CandidatesList/>}/>
-                                    <Route path="/candidates/:id/:vacancyId" element={<CandidateDetails/>}/>
                                     <Route path="/vacancies" element={<VacanciesList/>}/>
                                     <Route path="/vacancies/create" element={<CreateVacancy/>}/>
                                     <Route path="/mass-screening" element={<MassScreening/>}/>
