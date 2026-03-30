@@ -1,18 +1,29 @@
 import {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
     Alert,
     Box,
+    Button,
+    Card,
+    CardContent,
     Checkbox,
     Chip,
     CircularProgress,
+    Dialog,
+    DialogContent,
+    DialogTitle,
     FormControl,
     FormControlLabel,
+    Grid,
     IconButton,
     InputLabel,
+    LinearProgress,
+    Link,
     Menu,
     MenuItem,
     Paper,
@@ -31,7 +42,15 @@ import {
     Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import {CandidateVacancyInfo, getScoreColor, getStatusColor, getStatusLabel} from '../types';
+import PhoneIcon from '@mui/icons-material/Phone';
+import TelegramIcon from '@mui/icons-material/Telegram';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import WorkIcon from '@mui/icons-material/Work';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import GradingIcon from '@mui/icons-material/Grading';
+import {CandidateQuestionAnswer, CandidateVacancyInfo, getScoreColor, getStatusColor, getStatusLabel} from '../types';
 import {api} from '../services/api';
 
 type SortField = 'fullName' | 'vacancyTitle' | 'status' | 'screeningScore' | 'interviewScore' | 'appliedAt';
@@ -58,7 +77,6 @@ const gradientTheme = {
 };
 
 export default function CandidatesList() {
-    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [showArchived, setShowArchived] = useState(false);
@@ -78,6 +96,12 @@ export default function CandidatesList() {
         isArchived: null,
     });
 
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [selectedCandidate, setSelectedCandidate] = useState<CandidateVacancyInfo | null>(null);
+    const [answers, setAnswers] = useState<CandidateQuestionAnswer[]>([]);
+    const [detailLoading, setDetailLoading] = useState(false);
+    const [answersLoading, setAnswersLoading] = useState(false);
+
     // Загрузка данных из API
     useEffect(() => {
         loadCandidateVacancies();
@@ -96,6 +120,24 @@ export default function CandidatesList() {
         }
     };
 
+    const fetchCandidateDetails = async (candidateId: number, vacancyId: string) => {
+        try {
+            setDetailLoading(true);
+            const candidateData = await api.getCandidateVacancyByID(candidateId, vacancyId);
+            setSelectedCandidate(candidateData);
+
+            setAnswersLoading(true);
+            const answersData = await api.getCandidateVacancyAnswers(candidateId, vacancyId);
+            setAnswers(answersData);
+        } catch (error) {
+            console.error('Ошибка при загрузке деталей кандидата:', error);
+            showSnackbar('Не удалось загрузить данные кандидата', 'error');
+        } finally {
+            setDetailLoading(false);
+            setAnswersLoading(false);
+        }
+    };
+
     const showSnackbar = (message: string, severity: SnackbarState['severity'] = 'info') => {
         setSnackbar({
             open: true,
@@ -111,7 +153,6 @@ export default function CandidatesList() {
         setSnackbar(prev => ({...prev, open: false}));
     };
 
-    // Функции для управления меню
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, candidateId: number, vacancyId: string, isArchived: boolean) => {
         event.stopPropagation();
         setMenu({
@@ -131,26 +172,32 @@ export default function CandidatesList() {
         });
     };
 
-    // Функция архивации/разархивации
     const handleArchiveToggle = async (candidateId: number, vacancyId: string, isCurrentlyArchived: boolean) => {
         try {
             if (isCurrentlyArchived) {
-                // Разархивация - здесь нужно добавить соответствующий метод API
-                // await api.unarchiveCandidateVacancy(candidateId, vacancyId);
                 showSnackbar('Функционал разархивации пока не реализован', 'warning');
             } else {
-                // Архивация
                 await api.archiveCandidateVacancy(candidateId, vacancyId);
                 showSnackbar('Кандидат успешно заархивирован', 'success');
             }
 
             handleMenuClose();
-
             await loadCandidateVacancies();
         } catch (error) {
             console.error('Ошибка при архивации кандидата:', error);
             showSnackbar('Ошибка при архивации кандидата', 'error');
         }
+    };
+
+    const handleOpenDetails = (candidateId: number, vacancyId: string) => {
+        setDialogOpen(true);
+        fetchCandidateDetails(candidateId, vacancyId);
+    };
+
+    const handleCloseDialog = () => {
+        setDialogOpen(false);
+        setSelectedCandidate(null);
+        setAnswers([]);
     };
 
     const uniqueStatuses = Array.from(
@@ -234,10 +281,6 @@ export default function CandidatesList() {
         }
     };
 
-    const handleRowClick = (candidateId: number, vacancyId: string) => {
-        navigate(`/candidates/${candidateId}/${vacancyId}`);
-    };
-
     const handleStatusFilterChange = (event: SelectChangeEvent) => {
         setStatusFilter(event.target.value);
     };
@@ -267,6 +310,26 @@ export default function CandidatesList() {
             </Box>
         );
     };
+
+    const formatTime = (seconds: number) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
+    const formatDate = (dateString: Date) => {
+        try {
+            return new Date(dateString).toLocaleDateString('ru-RU');
+        } catch (error) {
+            return 'Неверная дата';
+        }
+    };
+
+    // Расчет статистики для диалога
+    const totalAnswers = answers.length;
+    const totalScore = answers.reduce((sum, item) => sum + (item.answer?.score || 0), 0);
+    const averageScore = totalAnswers > 0 ? Math.round(totalScore / totalAnswers) : 0;
+    const totalTimeTaken = answers.reduce((sum, item) => sum + (item.answer?.time_taken || 0), 0);
 
     if (loading) {
         return (
@@ -352,11 +415,6 @@ export default function CandidatesList() {
                                     color="primary"
                                     icon={<ArchiveIcon fontSize="small"/>}
                                     checkedIcon={<ArchiveIcon fontSize="small"/>}
-                                    sx={{
-                                        '&.Mui-disabled': {
-                                            color: 'text.disabled',
-                                        },
-                                    }}
                                 />
                             }
                             label=""
@@ -462,6 +520,7 @@ export default function CandidatesList() {
                                 <TableRow
                                     key={candidate.uniqueKey}
                                     hover
+                                    onClick={() => handleOpenDetails(candidate.id, candidate.vacancyID)}
                                     sx={{
                                         cursor: candidate.isArchived ? 'default' : 'pointer',
                                         bgcolor: candidate.isArchived ? 'action.hover' : 'inherit',
@@ -472,10 +531,7 @@ export default function CandidatesList() {
                                         }
                                     }}
                                 >
-                                    <TableCell
-                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
-                                        sx={{py: 2}}
-                                    >
+                                    <TableCell sx={{py: 2}}>
                                         <Box sx={{display: 'flex', alignItems: 'center'}}>
                                             <Typography
                                                 variant="body1"
@@ -502,28 +558,13 @@ export default function CandidatesList() {
                                             )}
                                         </Box>
                                     </TableCell>
-                                    <TableCell
-                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
-                                        sx={{
-                                            py: 2,
-                                            color: candidate.isArchived ? 'text.secondary' : 'inherit'
-                                        }}
-                                    >
+                                    <TableCell sx={{py: 2, color: candidate.isArchived ? 'text.secondary' : 'inherit'}}>
                                         {candidate.vacancyTitle}
                                     </TableCell>
-                                    <TableCell
-                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
-                                        sx={{
-                                            py: 2,
-                                            color: candidate.isArchived ? 'text.secondary' : 'inherit'
-                                        }}
-                                    >
+                                    <TableCell sx={{py: 2, color: candidate.isArchived ? 'text.secondary' : 'inherit'}}>
                                         {candidate.city}
                                     </TableCell>
-                                    <TableCell
-                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
-                                        sx={{py: 2}}
-                                    >
+                                    <TableCell sx={{py: 2}}>
                                         <Chip
                                             label={getStatusLabel(candidate.status)}
                                             color={getStatusColor(candidate.status)}
@@ -536,30 +577,16 @@ export default function CandidatesList() {
                                             }}
                                         />
                                     </TableCell>
-                                    <TableCell
-                                        align="center"
-                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
-                                        sx={{py: 2}}
-                                    >
+                                    <TableCell align="center" sx={{py: 2}}>
                                         {renderScoreCell(candidate.screeningScore)}
                                     </TableCell>
-                                    <TableCell
-                                        align="center"
-                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
-                                        sx={{py: 2}}
-                                    >
+                                    <TableCell align="center" sx={{py: 2}}>
                                         {renderScoreCell(candidate.interviewScore)}
                                     </TableCell>
-                                    <TableCell
-                                        onClick={() => handleRowClick(candidate.id, candidate.vacancyID)}
-                                        sx={{
-                                            py: 2,
-                                            color: candidate.isArchived ? 'text.secondary' : 'inherit'
-                                        }}
-                                    >
+                                    <TableCell sx={{py: 2, color: candidate.isArchived ? 'text.secondary' : 'inherit'}}>
                                         {candidate.appliedAt.toLocaleDateString('ru-RU')}
                                     </TableCell>
-                                    <TableCell align="center" sx={{py: 2}}>
+                                    <TableCell align="center" sx={{py: 2}} onClick={(e) => e.stopPropagation()}>
                                         <IconButton
                                             onClick={(e) => handleMenuOpen(e, candidate.id, candidate.vacancyID, candidate.isArchived)}
                                             size="small"
@@ -580,6 +607,377 @@ export default function CandidatesList() {
                 </Table>
             </TableContainer>
 
+            {/* Модальное окно деталей кандидата */}
+            <Dialog
+                open={dialogOpen}
+                onClose={handleCloseDialog}
+                maxWidth="md"
+                fullWidth
+                scroll="paper"
+                PaperProps={{
+                    sx: {
+                        borderRadius: 1,
+                    }
+                }}
+            >
+                <DialogTitle sx={{p: 3, pb: 2}}>
+                    <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                        <Typography variant="h5" component="div" sx={{fontWeight: 700}}>
+                            Детали кандидата
+                        </Typography>
+                        <IconButton
+                            onClick={handleCloseDialog}
+                            sx={{
+                                '&:hover': {
+                                    background: gradientTheme.light,
+                                },
+                            }}
+                        >
+                            <CloseIcon/>
+                        </IconButton>
+                    </Box>
+                </DialogTitle>
+
+                <DialogContent dividers sx={{p: 3}}>
+                    {detailLoading ? (
+                        <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200}}>
+                            <CircularProgress/>
+                        </Box>
+                    ) : selectedCandidate ? (
+                        <Box sx={{py: 1}}>
+                            {/* Основная инфо: ФИО и статус */}
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                mb: 3,
+                                flexDirection: {xs: 'column', md: 'row'},
+                                gap: 2
+                            }}>
+                                <Box>
+                                    <Typography variant="h4"
+                                                sx={{fontWeight: 600, fontSize: {xs: '1.5rem', md: '2rem'}, mb: 1}}>
+                                        {selectedCandidate.candidate.full_name}
+                                    </Typography>
+                                    <Chip
+                                        label={getStatusLabel(selectedCandidate.meta.status)}
+                                        color={getStatusColor(selectedCandidate.meta.status)}
+                                        size="medium"
+                                        sx={{borderRadius: 1, fontWeight: 600}}
+                                    />
+                                </Box>
+                                <Box sx={{textAlign: {xs: 'left', md: 'right'}}}>
+                                    <Typography variant="caption" color="text.secondary">Дата подачи заявки</Typography>
+                                    <Typography variant="body2" sx={{mb: 1, fontWeight: 500}}>
+                                        {formatDate(selectedCandidate.resume_screening.created_at)}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">Последнее
+                                        обновление</Typography>
+                                    <Typography variant="body2" sx={{fontWeight: 500}}>
+                                        {formatDate(selectedCandidate.meta.updated_at)}
+                                    </Typography>
+                                </Box>
+                            </Box>
+
+                            <Box sx={{my: 3}}/>
+
+                            {/* Личные данные */}
+                            <Typography variant="subtitle1" gutterBottom sx={{fontWeight: 600, mb: 2}}>
+                                Личные данные
+                            </Typography>
+                            <Grid container spacing={3}>
+                                <Grid item xs={12} md={6}>
+                                    <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                        <WorkIcon sx={{mr: 1.5, color: 'primary.main'}}/>
+                                        <Box>
+                                            <Typography variant="caption" color="text.secondary">Вакансия</Typography>
+                                            <Typography variant="body2"
+                                                        sx={{fontWeight: 500}}>{selectedCandidate.vacancy.title}</Typography>
+                                        </Box>
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                        <LocationOnIcon sx={{mr: 1.5, color: 'primary.main'}}/>
+                                        <Box>
+                                            <Typography variant="caption" color="text.secondary">Город
+                                                проживания</Typography>
+                                            <Typography variant="body2"
+                                                        sx={{fontWeight: 500}}>{selectedCandidate.candidate.city || 'Не указан'}</Typography>
+                                        </Box>
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                        <PhoneIcon sx={{mr: 1.5, color: 'primary.main'}}/>
+                                        <Box>
+                                            <Typography variant="caption" color="text.secondary">Номер
+                                                телефона</Typography>
+                                            <Typography variant="body2"
+                                                        sx={{fontWeight: 500}}>{selectedCandidate.candidate.phone || 'Не указан'}</Typography>
+                                        </Box>
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                        <TelegramIcon sx={{mr: 1.5, color: 'primary.main'}}/>
+                                        <Box>
+                                            <Typography variant="caption" color="text.secondary">Telegram</Typography>
+                                            <Typography variant="body2" sx={{fontWeight: 500}}>
+                                                {selectedCandidate.candidate.telegram_username ? (
+                                                    <Link
+                                                        href={`https://t.me/${selectedCandidate.candidate.telegram_username}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        sx={{textDecoration: 'none', color: 'primary.main'}}
+                                                    >
+                                                        {`@${selectedCandidate.candidate.telegram_username}`}
+                                                    </Link>
+                                                ) : 'Не указан'}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Grid>
+                            </Grid>
+
+                            <Box sx={{my: 3}}/>
+
+                            {/* Резюме */}
+                            <Typography variant="subtitle1" gutterBottom sx={{fontWeight: 600, mb: 2}}>
+                                Резюме
+                            </Typography>
+                            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                                <InsertDriveFileIcon sx={{fontSize: 40, color: 'primary.main'}}/>
+                                {selectedCandidate.resume_link && (
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        href={selectedCandidate.resume_link}
+                                        target="_blank"
+                                        sx={{
+                                            borderRadius: 1,
+                                            borderColor: 'primary.main',
+                                            color: 'primary.main',
+                                            '&:hover': {background: gradientTheme.light, borderColor: 'primary.main'},
+                                        }}
+                                    >
+                                        Скачать резюме
+                                    </Button>
+                                )}
+                            </Box>
+
+                            <Box sx={{my: 3}}/>
+
+                            {/* Результаты оценки */}
+                            <Typography variant="subtitle1" gutterBottom sx={{fontWeight: 600, mb: 2}}>
+                                Результаты оценки
+                            </Typography>
+                            <Grid container spacing={3}>
+                                <Grid item xs={12} md={6}>
+                                    <Card variant="outlined" sx={{borderRadius: 1}}>
+                                        <CardContent>
+                                            <Typography variant="caption" color="text.secondary" gutterBottom>Скрининг
+                                                резюме</Typography>
+                                            {selectedCandidate.resume_screening?.score !== null ? (
+                                                <Box sx={{
+                                                    display: 'inline-block',
+                                                    mt: 1,
+                                                    px: 2,
+                                                    py: 1,
+                                                    borderRadius: 1,
+                                                    bgcolor: getScoreColor(selectedCandidate.resume_screening.score),
+                                                    color: 'white',
+                                                    fontWeight: 700
+                                                }}>
+                                                    {selectedCandidate.resume_screening.score} / 100
+                                                </Box>
+                                            ) : <Typography variant="body2" color="text.secondary">Еще не
+                                                оценено</Typography>}
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <Card variant="outlined" sx={{borderRadius: 1}}>
+                                        <CardContent>
+                                            <Typography variant="caption" color="text.secondary" gutterBottom>Результаты
+                                                интервью</Typography>
+                                            {selectedCandidate.meta.interview_score !== null ? (
+                                                <Box sx={{
+                                                    display: 'inline-block',
+                                                    mt: 1,
+                                                    px: 2,
+                                                    py: 1,
+                                                    borderRadius: 1,
+                                                    bgcolor: getScoreColor(selectedCandidate.meta.interview_score),
+                                                    color: 'white',
+                                                    fontWeight: 700
+                                                }}>
+                                                    {selectedCandidate.meta.interview_score} / 100
+                                                </Box>
+                                            ) : <Typography variant="body2" color="text.secondary">Еще не
+                                                пройдено</Typography>}
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                            </Grid>
+
+                            {/* Фидбек от LLM */}
+                            {selectedCandidate.resume_screening?.feedback && (
+                                <>
+                                    <Box sx={{my: 3}}/>
+                                    <Box>
+                                        <Typography variant="subtitle1" gutterBottom sx={{
+                                            fontWeight: 600,
+                                            mb: 2,
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}>
+                                            Результат скрининга резюме
+                                        </Typography>
+                                        <Card variant="outlined" sx={{borderRadius: 1}}>
+                                            <CardContent>
+                                                <Typography variant="body2"
+                                                            sx={{whiteSpace: 'pre-wrap', lineHeight: 1.6}}>
+                                                    {selectedCandidate.resume_screening.feedback}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Box>
+                                </>
+                            )}
+
+                            <Box sx={{my: 3}}/>
+
+                            {/* Ответы на вопросы */}
+                            <Typography variant="subtitle1" gutterBottom sx={{fontWeight: 600, mb: 2}}>
+                                Ответы на вопросы интервью
+                            </Typography>
+
+                            {answersLoading ? (
+                                <Box sx={{textAlign: 'center', py: 2}}>
+                                    <Typography variant="body2" color="text.secondary">Загрузка ответов...</Typography>
+                                    <LinearProgress sx={{mt: 1}}/>
+                                </Box>
+                            ) : answers.length > 0 ? (
+                                <Box>
+                                    {/* Статистика */}
+                                    <Card sx={{mb: 3, background: gradientTheme.light, borderRadius: 1}}>
+                                        <CardContent>
+                                            <Grid container spacing={2}>
+                                                <Grid item xs={4} sx={{textAlign: 'center'}}>
+                                                    <Typography variant="h5" color="primary.main"
+                                                                fontWeight={700}>{totalAnswers}</Typography>
+                                                    <Typography variant="caption" color="text.secondary">Всего
+                                                        вопросов</Typography>
+                                                </Grid>
+                                                <Grid item xs={4} sx={{textAlign: 'center'}}>
+                                                    <Typography variant="h5" sx={{
+                                                        color: getScoreColor(averageScore),
+                                                        fontWeight: 700
+                                                    }}>{averageScore}%</Typography>
+                                                    <Typography variant="caption" color="text.secondary">Средний
+                                                        балл</Typography>
+                                                </Grid>
+                                                <Grid item xs={4} sx={{textAlign: 'center'}}>
+                                                    <Typography variant="h5" color="secondary.main"
+                                                                fontWeight={700}>{formatTime(totalTimeTaken)}</Typography>
+                                                    <Typography variant="caption" color="text.secondary">Общее
+                                                        время</Typography>
+                                                </Grid>
+                                            </Grid>
+                                        </CardContent>
+                                    </Card>
+
+                                    {/* Аккордеоны с ответами */}
+                                    {answers.map((item, index) => (
+                                        <Accordion key={item.question.id} sx={{
+                                            mb: 1,
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                            boxShadow: 'none'
+                                        }}>
+                                            <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    width: '100%',
+                                                    justifyContent: 'space-between'
+                                                }}>
+                                                    <Typography variant="body2" sx={{fontWeight: 600}}>
+                                                        Вопрос {index + 1}: {item.question.content.length > 50 ? `${item.question.content.substring(0, 50)}...` : item.question.content}
+                                                    </Typography>
+                                                    <Box sx={{display: 'flex', gap: 1, ml: 1}}>
+                                                        {item.answer?.score !== undefined && (
+                                                            <Chip
+                                                                icon={<GradingIcon sx={{fontSize: '1rem !important'}}/>}
+                                                                label={`${item.answer.score}%`} size="small"
+                                                                color={item.answer.score >= 70 ? 'success' : item.answer.score >= 40 ? 'warning' : 'error'}
+                                                                variant="outlined"
+                                                            />
+                                                        )}
+                                                    </Box>
+                                                </Box>
+                                            </AccordionSummary>
+                                            <AccordionDetails sx={{borderTop: '1px solid', borderColor: 'divider'}}>
+                                                <Grid container spacing={2}>
+                                                    <Grid item xs={12} md={6}>
+                                                        <Typography variant="caption" color="text.secondary"
+                                                                    sx={{fontWeight: 600}}>Вопрос:</Typography>
+                                                        <Typography variant="body2" sx={{
+                                                            fontWeight: 500,
+                                                            mb: 1
+                                                        }}>{item.question.content}</Typography>
+
+                                                        {item.question.reference && (
+                                                            <>
+                                                                <Typography variant="caption" color="text.secondary"
+                                                                            sx={{fontWeight: 600}}>Идеальный
+                                                                    ответ:</Typography>
+                                                                <Box sx={{
+                                                                    p: 1.5,
+                                                                    mb: 1,
+                                                                    borderRadius: 1,
+                                                                    background: '#e8f5e9',
+                                                                    border: '1px solid #c8e6c9'
+                                                                }}>
+                                                                    <Typography variant="body2"
+                                                                                color="success.dark">{item.question.reference}</Typography>
+                                                                </Box>
+                                                            </>
+                                                        )}
+                                                    </Grid>
+                                                    <Grid item xs={12} md={6}>
+                                                        <Typography variant="caption" color="text.secondary"
+                                                                    sx={{fontWeight: 600}}>Ответ кандидата:</Typography>
+                                                        <Typography variant="body2" sx={{fontWeight: 500, mb: 1}}>
+                                                            {item.answer?.content || 'Ответ не предоставлен'}
+                                                        </Typography>
+                                                        <Box sx={{display: 'flex', gap: 1}}>
+                                                            {item.answer?.time_taken !== undefined && (
+                                                                <Chip icon={<AccessTimeIcon
+                                                                    sx={{fontSize: '1rem !important'}}/>}
+                                                                      label={`Время: ${formatTime(item.answer.time_taken)}`}
+                                                                      size="small" variant="outlined"/>
+                                                            )}
+                                                        </Box>
+                                                    </Grid>
+                                                </Grid>
+                                            </AccordionDetails>
+                                        </Accordion>
+                                    ))}
+                                </Box>
+                            ) : (
+                                <Typography variant="body2" color="text.secondary">Кандидат еще не отвечал на вопросы
+                                    интервью.</Typography>
+                            )}
+                        </Box>
+                    ) : (
+                        <Typography variant="body2" color="text.secondary">Не удалось загрузить данные
+                            кандидата</Typography>
+                    )}
+                </DialogContent>
+            </Dialog>
+
             {/* Меню действий */}
             <Menu
                 anchorEl={menu.anchorEl}
@@ -587,30 +985,12 @@ export default function CandidatesList() {
                 onClose={handleMenuClose}
                 onClick={(e) => e.stopPropagation()}
                 PaperProps={{
-                    sx: {
-                        borderRadius: 1,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    }
+                    sx: {borderRadius: 1, boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}
                 }}
             >
                 {menu.isArchived ? (
-                    <MenuItem
-                        onClick={() => {
-                            if (menu.candidateId && menu.vacancyId) {
-                                handleArchiveToggle(menu.candidateId, menu.vacancyId, true);
-                            }
-                        }}
-                        disabled // Заглушка для разархивации
-                        sx={{
-                            borderRadius: 0.5,
-                            m: 0.5,
-                            '&.Mui-disabled': {
-                                color: 'text.disabled',
-                            },
-                        }}
-                    >
-                        <UnarchiveIcon sx={{mr: 1, fontSize: 20}}/>
-                        Разархивировать
+                    <MenuItem disabled sx={{borderRadius: 0.5, m: 0.5}}>
+                        <UnarchiveIcon sx={{mr: 1, fontSize: 20}}/> Разархивировать
                     </MenuItem>
                 ) : (
                     <MenuItem
@@ -622,13 +1002,10 @@ export default function CandidatesList() {
                         sx={{
                             borderRadius: 0.5,
                             m: 0.5,
-                            '&:hover': {
-                                background: gradientTheme.light,
-                            },
+                            '&:hover': {background: gradientTheme.light},
                         }}
                     >
-                        <ArchiveIcon sx={{mr: 1, fontSize: 20}}/>
-                        Архивировать
+                        <ArchiveIcon sx={{mr: 1, fontSize: 20}}/> Архивировать
                     </MenuItem>
                 )}
             </Menu>
@@ -637,9 +1014,7 @@ export default function CandidatesList() {
                 <Typography variant="body2" color="text.secondary">
                     Всего кандидатов: {sortedCandidates.length}
                     {showArchived && (
-                        <span>
-                            {' '}(включая архивные: {candidates.filter(c => c.isArchived).length})
-                        </span>
+                        <span>{' '}(включая архивные: {candidates.filter(c => c.isArchived).length})</span>
                     )}
                 </Typography>
             </Box>
@@ -663,12 +1038,7 @@ export default function CandidatesList() {
                                 snackbar.severity === 'warning' ? 'warning.light' : 'info.light',
                     }}
                     action={
-                        <IconButton
-                            size="small"
-                            aria-label="close"
-                            color="inherit"
-                            onClick={handleCloseSnackbar}
-                        >
+                        <IconButton size="small" aria-label="close" color="inherit" onClick={handleCloseSnackbar}>
                             <CloseIcon fontSize="small"/>
                         </IconButton>
                     }
