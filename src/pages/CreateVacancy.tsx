@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {
     Alert,
@@ -18,7 +18,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {CreateVacancyRequest, Question} from '../types';
 import {api} from '../services/api';
 
@@ -218,25 +217,7 @@ export default function CreateVacancy() {
     return (
         <Box>
             {/* Заголовок страницы */}
-            <Box sx={{mb: 4}}>
-                <Button
-                    startIcon={<ArrowBackIcon/>}
-                    onClick={() => navigate('/vacancies')}
-                    sx={{
-                        mb: 2,
-                        color: 'text.secondary',
-                        '&:hover': {
-                            background: gradientTheme.light,
-                            color: 'primary.main',
-                        },
-                        '&:disabled': {
-                            color: 'text.disabled',
-                        },
-                        transition: 'all 0.2s ease',
-                    }}
-                >
-                    Назад к вакансиям
-                </Button>
+            <Box sx={{mb: 3}}>  {/* was mb:4 */}
                 <Typography
                     variant="h4"
                     gutterBottom
@@ -259,7 +240,7 @@ export default function CreateVacancy() {
                 <Alert
                     severity="success"
                     sx={{
-                        mb: 3,
+                        mb: 2.5,  // was mb:3
                         borderRadius: 1,
                         border: '1px solid',
                         borderColor: 'success.light',
@@ -272,7 +253,7 @@ export default function CreateVacancy() {
             <Paper
                 elevation={0}
                 sx={{
-                    p: 3,
+                    p: 2.5,  // was p:3
                     borderRadius: 1,
                     background: 'white',
                     border: '1px solid',
@@ -282,9 +263,9 @@ export default function CreateVacancy() {
             >
                 <form onSubmit={handleSubmit}>
                     {/* Название вакансии */}
-                    <Box sx={{mb: 4}}>
+                    <Box sx={{mb: 2}}>  {/* was mb:4 */}
                         <Typography variant="h6" gutterBottom sx={{fontWeight: 600, color: 'text.primary'}}>
-                            Название вакансии *
+                            Название вакансии
                         </Typography>
                         <TextField
                             fullWidth
@@ -305,18 +286,16 @@ export default function CreateVacancy() {
                         />
                     </Box>
 
-                    <Divider sx={{my: 4, borderColor: 'divider'}}/>
-
                     {/* Ключевые навыки */}
-                    <Box sx={{mb: 4}}>
+                    <Box sx={{mb: 2}}>  {/* was mb:4 */}
                         <Typography variant="h6" gutterBottom sx={{fontWeight: 600, color: 'text.primary'}}>
-                            Ключевые пожелания к кандидату *
+                            Ключевые пожелания к кандидату
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{mb: 3}}>
+                        <Typography variant="body2" color="text.secondary" sx={{mb: 1}}>  {/* was mb:3 */}
                             Укажите навыки, технологии или требования к кандидату. Эта информация будет использоваться
                             для анализа резюме.
                         </Typography>
-                        <Box sx={{display: 'flex', gap: 1, mb: 2}}>
+                        <Box sx={{display: 'flex', gap: 1, mb: 1}}>  {/* was mb:2 */}
                             <TextField
                                 fullWidth
                                 placeholder="Например: React, TypeScript, 3+ года опыта"
@@ -336,38 +315,20 @@ export default function CreateVacancy() {
                                 }}
                             />
                             <Button
-                                variant="contained"
+                                variant="text"
                                 onClick={handleAddSkill}
                                 startIcon={<AddIcon/>}
                                 disabled={isLoading || !skillInput.trim()}
                                 sx={{
-                                    borderRadius: 1,
-                                    background: skillInput.trim() ? gradientTheme.primary : 'white',
-                                    color: skillInput.trim() ? 'white' : 'primary.main',
-                                    border: skillInput.trim() ? 'none' : '2px solid',
-                                    borderColor: skillInput.trim() ? 'transparent' : gradientTheme.primary,
-                                    '&:hover': {
-                                        background: skillInput.trim() ? gradientTheme.hover : gradientTheme.light,
-                                        transform: skillInput.trim() ? 'translateY(-1px)' : 'none',
-                                        borderColor: skillInput.trim() ? 'transparent' : gradientTheme.hover,
-                                        boxShadow: skillInput.trim() ? '0 4px 12px rgba(0, 136, 204, 0.3)' : 'none',
-                                    },
-                                    '&:disabled': {
-                                        background: 'white',
-                                        color: 'text.disabled',
-                                        borderColor: 'grey.300',
-                                        transform: 'none',
-                                        boxShadow: 'none',
-                                    },
-                                    transition: 'all 0.2s ease',
-                                    minWidth: '120px',
+                                    color: 'primary.main',
+                                    textTransform: 'none',
                                     fontWeight: 600,
                                 }}
                             >
                                 Добавить
                             </Button>
                         </Box>
-                        <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
+                        <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 0.5}}>  {/* was gap:1 */}
                             {skills.map((skill) => (
                                 <Chip
                                     key={skill}
@@ -398,16 +359,14 @@ export default function CreateVacancy() {
                         )}
                     </Box>
 
-                    <Divider sx={{my: 4, borderColor: 'divider'}}/>
-
                     {/* Ссылка для Telegram бота */}
                     {botLink && (
                         <>
-                            <Box sx={{mb: 4}}>
+                            <Box sx={{mb: 3}}>  {/* was mb:4 */}
                                 <Typography variant="h6" gutterBottom sx={{fontWeight: 600, color: 'text.primary'}}>
                                     Ссылка для кандидатов
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
+                                <Typography variant="body2" color="text.secondary" sx={{mb: 1.5}}>  {/* was mb:2 */}
                                     Уникальная ссылка для перехода в Telegram бота. Отправьте эту ссылку кандидатам для
                                     прохождения интервью.
                                 </Typography>
@@ -446,25 +405,27 @@ export default function CreateVacancy() {
                                     }}
                                 />
                             </Box>
-                            <Divider sx={{my: 4, borderColor: 'divider'}}/>
                         </>
                     )}
 
-                    {/* Вопросы для интервью */}
-                    <Box sx={{mb: 4}}>
+                    <Divider sx={{my: 2, borderColor: 'divider'}}/> {/* was my:4 */}
+
+
+                    <Box sx={{mb: 3}}>
                         <Typography variant="h6" gutterBottom sx={{fontWeight: 600, color: 'text.primary'}}>
-                            Вопросы для интервью *
+                            Вопросы для интервью
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{mb: 3}}>
-                            Вопросы, которые бот будет задавать кандидату в Telegram
+                        <Typography variant="body2" color="text.secondary" sx={{mb: 2.5}}>
+                            Вопросы, которые бот будет задавать кандидату
                         </Typography>
+
                         {questions.map((question, index) => (
                             <Paper
                                 key={question.id}
                                 variant="outlined"
                                 sx={{
-                                    p: 2,
-                                    mb: 2,
+                                    p: 1.5,
+                                    mb: 1.5,
                                     borderRadius: 1,
                                     border: '1px solid',
                                     borderColor: 'divider',
@@ -475,112 +436,103 @@ export default function CreateVacancy() {
                                     transition: 'all 0.2s ease',
                                 }}
                             >
-                                <Box sx={{display: 'flex', alignItems: 'flex-start', gap: 2}}>
-                                    <Box sx={{flex: 1}}>
-                                        <Box sx={{
+                                <Box>
+                                    <Box
+                                        sx={{
                                             display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            mb: 2
-                                        }}>
-                                            <Typography variant="subtitle2" sx={{fontWeight: 600}}>
-                                                Вопрос {index + 1}
-                                            </Typography>
-                                            {questions.length > 1 && (
-                                                <Button
-                                                    size="small"
-                                                    color="error"
-                                                    onClick={() => handleDeleteQuestion(question.id)}
-                                                    disabled={isLoading}
-                                                    startIcon={<DeleteIcon/>}
-                                                    sx={{
-                                                        borderRadius: 1,
-                                                        textTransform: 'none',
-                                                        '&:disabled': {
-                                                            color: 'text.disabled',
-                                                        },
-                                                    }}
-                                                >
-                                                    Удалить
-                                                </Button>
-                                            )}
-                                        </Box>
-                                        <TextField
-                                            fullWidth
-                                            multiline
-                                            rows={2}
-                                            placeholder="Введите текст вопроса"
-                                            value={question.content}
-                                            onChange={(e) => handleQuestionChange(question.id, 'content', e.target.value)}
-                                            error={!question.content.trim()}
-                                            helperText={!question.content.trim() ? "Текст вопроса обязателен" : ""}
-                                            required
-                                            sx={{mb: 2}}
-                                            disabled={isLoading}
-                                        />
-                                        <TextField
-                                            fullWidth
-                                            multiline
-                                            rows={2}
-                                            label="Пожелание к ответу (опционально)"
-                                            placeholder="Опишите, что вы ожидаете услышать в ответе на этот вопрос"
-                                            value={question.reference || ''}
-                                            onChange={(e) => handleQuestionChange(question.id, 'reference', e.target.value)}
-                                            sx={{mb: 2}}
-                                            disabled={isLoading}
-                                        />
-                                        <TextField
-                                            type="number"
-                                            label="Время на ответ (секунды)"
-                                            value={question.time_limit}
-                                            onChange={(e) => handleQuestionChange(question.id, 'time_limit', parseInt(e.target.value) || 60)}
-                                            inputProps={{min: 30, max: 300, step: 10}}
-                                            error={question.time_limit < 30 || question.time_limit > 300}
-                                            helperText={question.time_limit < 30 || question.time_limit > 300 ? "Допустимый диапазон: 30-300 секунд" : ""}
-                                            sx={{width: 200}}
-                                            disabled={isLoading}
-                                        />
+                                            mb: 1,
+                                        }}
+                                    >
+                                        <Typography variant="subtitle2" sx={{fontWeight: 600}}>
+                                            Вопрос {index + 1}
+                                        </Typography>
+                                        {questions.length > 1 && (
+                                            <Button
+                                                size="small"
+                                                color="error"
+                                                onClick={() => handleDeleteQuestion(question.id)}
+                                                disabled={isLoading}
+                                                startIcon={<DeleteIcon/>}
+                                                aria-label={`Удалить вопрос ${index + 1}`}
+                                                sx={{
+                                                    borderRadius: 1,
+                                                    textTransform: 'none',
+                                                    '&:disabled': {
+                                                        color: 'text.disabled',
+                                                    },
+                                                }}
+                                            >
+                                                Удалить
+                                            </Button>
+                                        )}
                                     </Box>
+
+                                    <TextField
+                                        fullWidth
+                                        multiline
+                                        rows={2}
+                                        placeholder="Введите текст вопроса"
+                                        value={question.content}
+                                        onChange={(e) => handleQuestionChange(question.id, 'content', e.target.value)}
+                                        error={!question.content.trim()}
+                                        helperText={!question.content.trim() ? 'Текст вопроса обязателен' : ''}
+                                        required
+                                        sx={{mb: 2}}
+                                        disabled={isLoading}
+                                    />
+
+                                    <TextField
+                                        fullWidth
+                                        multiline
+                                        rows={2}
+                                        label="Пожелание к ответу (опционально)"
+                                        placeholder="Опишите, что вы ожидаете услышать в ответе на этот вопрос"
+                                        value={question.reference || ''}
+                                        onChange={(e) => handleQuestionChange(question.id, 'reference', e.target.value)}
+                                        sx={{mb: 2}}
+                                        disabled={isLoading}
+                                    />
+
+                                    <TextField
+                                        type="number"
+                                        label="Время на ответ (секунды)"
+                                        value={question.time_limit}
+                                        onChange={(e) => handleQuestionChange(question.id, 'time_limit', parseInt(e.target.value) || 60)}
+                                        inputProps={{min: 30, max: 300, step: 10}}
+                                        error={question.time_limit < 30 || question.time_limit > 300}
+                                        helperText={question.time_limit < 30 || question.time_limit > 300 ? "Допустимый диапазон: 30-300 секунд" : ""}
+                                        sx={{width: 200}}
+                                        disabled={isLoading}
+                                    />
                                 </Box>
                             </Paper>
                         ))}
+
                         <Button
-                            variant="outlined"
                             startIcon={<AddIcon/>}
                             onClick={handleAddQuestion}
+                            sx={{mt: 0, color: 'theme.primary', textTransform: 'none', fontWeight: 500}}
                             disabled={isLoading}
-                            sx={{
-                                borderRadius: 1,
-                                borderColor: 'primary.main',
-                                color: 'primary.main',
-                                '&:hover': {
-                                    background: gradientTheme.light,
-                                    borderColor: 'primary.main',
-                                    transform: 'translateY(-1px)',
-                                },
-                                '&:disabled': {
-                                    borderColor: 'grey.300',
-                                    color: 'text.disabled',
-                                },
-                                transition: 'all 0.2s ease',
-                            }}
+                            aria-label="Добавить новый вопрос"
                         >
-                            Добавить вопрос
+                            Добавить еще вопрос
                         </Button>
                     </Box>
 
-                    <Divider sx={{my: 4}}/>
+                    <Divider sx={{my: 3, borderColor: 'divider'}}/> {/* was my:4 */}
 
                     {/* Кнопки */}
-                    <Box sx={{display: 'flex', gap: 2, justifyContent: 'flex-end'}}>
+                    <Box sx={{display: 'flex', gap: 1.5, justifyContent: 'flex-end'}}>  {/* was gap:2 */}
                         <Button
                             variant="outlined"
                             onClick={() => navigate('/vacancies')}
                             disabled={isLoading}
                             sx={{
                                 borderRadius: 1,
-                                px: 3,
-                                py: 1,
+                                px: 2.5,  // was px:3
+                                py: 0.75, // was py:1
                                 borderColor: 'divider',
                                 color: 'text.secondary',
                                 '&:hover': {
@@ -604,8 +556,8 @@ export default function CreateVacancy() {
                             disabled={!isFormValid() || isLoading}
                             sx={{
                                 borderRadius: 1,
-                                px: 3,
-                                py: 1,
+                                px: 2.5,  // was px:3
+                                py: 0.75, // was py:1
                                 background: isFormValid() && !isLoading ? gradientTheme.primary : 'white',
                                 color: isFormValid() && !isLoading ? 'white' : 'primary.main',
                                 border: '2px solid',
