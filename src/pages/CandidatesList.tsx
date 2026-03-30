@@ -772,50 +772,90 @@ export default function CandidatesList() {
                             <Typography variant="subtitle1" gutterBottom sx={{fontWeight: 600, mb: 2}}>
                                 Результаты оценки
                             </Typography>
-                            <Grid container spacing={3}>
-                                <Grid item xs={12} md={6}>
-                                    <Card variant="outlined" sx={{borderRadius: 1}}>
-                                        <CardContent>
-                                            <Typography variant="caption" color="text.secondary" gutterBottom>Скрининг
-                                                резюме</Typography>
-                                            {selectedCandidate.resume_screening?.score !== null ? (
-                                                <Box sx={{
-                                                    display: 'inline-block',
-                                                    mt: 1,
-                                                    px: 2,
-                                                    py: 1,
-                                                    borderRadius: 1,
-                                                    bgcolor: getScoreColor(selectedCandidate.resume_screening.score),
-                                                    color: 'white',
-                                                    fontWeight: 700
-                                                }}>
-                                                    {selectedCandidate.resume_screening.score} / 100
+                            <Grid container spacing={3}
+                                  alignItems="stretch"> {/* alignItems stretch помогает выравнивать высоту */}
+                                <Grid item xs={12} md={6} sx={{display: 'flex'}}>
+                                    <Card variant="outlined" sx={{
+                                        borderRadius: 1,
+                                        width: '100%',
+                                        display: 'flex',
+                                        flexDirection: 'column'
+                                    }}>
+                                        <CardContent sx={{flexGrow: 1, display: 'flex', alignItems: 'center'}}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                width: '100%',
+                                                minHeight: '32px' // Высота стандартного Chip, чтобы блоки не дергались
+                                            }}>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    Скрининг резюме
+                                                </Typography>
+
+                                                <Box>
+                                                    {selectedCandidate.resume_screening?.score !== null ? (
+                                                        <Chip
+                                                            label={`${selectedCandidate.resume_screening.score} / 100`}
+                                                            size="small"
+                                                            sx={{
+                                                                borderRadius: 2,
+                                                                fontWeight: 700,
+                                                                bgcolor: getScoreColor(selectedCandidate.resume_screening.score),
+                                                                color: 'white'
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <Typography variant="body2" color="text.secondary"
+                                                                    sx={{lineHeight: '24px'}}>
+                                                            Еще не оценено
+                                                        </Typography>
+                                                    )}
                                                 </Box>
-                                            ) : <Typography variant="body2" color="text.secondary">Еще не
-                                                оценено</Typography>}
+                                            </Box>
                                         </CardContent>
                                     </Card>
                                 </Grid>
-                                <Grid item xs={12} md={6}>
-                                    <Card variant="outlined" sx={{borderRadius: 1}}>
-                                        <CardContent>
-                                            <Typography variant="caption" color="text.secondary" gutterBottom>Результаты
-                                                интервью</Typography>
-                                            {selectedCandidate.meta.interview_score !== null ? (
-                                                <Box sx={{
-                                                    display: 'inline-block',
-                                                    mt: 1,
-                                                    px: 2,
-                                                    py: 1,
-                                                    borderRadius: 1,
-                                                    bgcolor: getScoreColor(selectedCandidate.meta.interview_score),
-                                                    color: 'white',
-                                                    fontWeight: 700
-                                                }}>
-                                                    {selectedCandidate.meta.interview_score} / 100
+
+                                <Grid item xs={12} md={6} sx={{display: 'flex'}}>
+                                    <Card variant="outlined" sx={{
+                                        borderRadius: 1,
+                                        width: '100%',
+                                        display: 'flex',
+                                        flexDirection: 'column'
+                                    }}>
+                                        <CardContent sx={{flexGrow: 1, display: 'flex', alignItems: 'center'}}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                width: '100%',
+                                                minHeight: '32px'
+                                            }}>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    Результаты интервью
+                                                </Typography>
+
+                                                <Box>
+                                                    {selectedCandidate.meta.interview_score !== null ? (
+                                                        <Chip
+                                                            label={`${selectedCandidate.meta.interview_score} / 100`}
+                                                            size="small"
+                                                            sx={{
+                                                                borderRadius: 2,
+                                                                fontWeight: 700,
+                                                                bgcolor: getScoreColor(selectedCandidate.meta.interview_score),
+                                                                color: 'white'
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <Typography variant="body2" color="text.secondary"
+                                                                    sx={{lineHeight: '24px'}}>
+                                                            Еще не пройдено
+                                                        </Typography>
+                                                    )}
                                                 </Box>
-                                            ) : <Typography variant="body2" color="text.secondary">Еще не
-                                                пройдено</Typography>}
+                                            </Box>
                                         </CardContent>
                                     </Card>
                                 </Grid>
