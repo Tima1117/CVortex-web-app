@@ -256,7 +256,7 @@ export default function MassScreening() {
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            const candidateName = `Чурбашвили ${i + 1}`; // Placeholder – замените на реальное имя, если нужно
+            const candidateName = `Кандидат ${crypto.randomUUID()}`;
 
             try {
                 // 1. Создаём кандидата

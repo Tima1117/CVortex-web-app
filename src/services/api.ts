@@ -92,6 +92,7 @@ export const api = {
     async createCandidate(fullName: string): Promise<{ id: number }> {
         const apiData = {
             full_name: fullName,
+            type: 2,
         };
 
         return fetchAPI<{ id: number }>('/api/bot/v1/candidate', {
