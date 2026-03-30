@@ -719,28 +719,17 @@ export default function MassScreening() {
                             {/* Результаты оценки */}
                             <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
                                 <Typography variant="subtitle1" sx={{fontWeight: 700}}>Результаты оценки</Typography>
-
-                                <Box sx={{display: 'flex', gap: 1}}>
-                                    <Chip
-                                        label={`Скрининг: ${selectedCandidate.resume_screening?.score ?? '-'}`}
-                                        size="small"
-                                        sx={{
-                                            borderRadius: 2,
-                                            fontWeight: 600,
-                                            bgcolor: getScoreColor(selectedCandidate.resume_screening?.score || 0),
-                                            color: 'white'
-                                        }}
-                                    />
-                                    <Chip
-                                        label={`Интервью: ${selectedCandidate.meta.interview_score ?? '-'}`}
-                                        size="small"
-                                        sx={{
-                                            borderRadius: 2,
-                                            fontWeight: 600,
-                                            bgcolor: getScoreColor(selectedCandidate.meta.interview_score || 0),
-                                            color: 'white'
-                                        }}
-                                    />
+                                <Box sx={{display: 'flex', alignItems: 'baseline', gap: 0.5}}>
+                                    <Typography variant="body2"
+                                                sx={{
+                                                    color: getScoreColor(selectedCandidate.resume_screening?.score || 0),
+                                                    fontWeight: 700
+                                                }}>
+                                        {selectedCandidate.resume_screening?.score}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        скрининг
+                                    </Typography>
                                 </Box>
                             </Box>
 
