@@ -4,7 +4,6 @@ import {
     Box,
     Button,
     Card,
-    CardActions,
     CardContent,
     Chip,
     CircularProgress,
@@ -198,7 +197,7 @@ export default function VacanciesList() {
                     Вакансии
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    Управление созданными вакансиями и просмотр статистики
+                    Управление созданными вакансиями
                 </Typography>
             </Box>
 
@@ -207,6 +206,7 @@ export default function VacanciesList() {
                     <Grid item xs={12} md={6} key={vacancy.id}>
                         <Card
                             elevation={0}
+                            onClick={() => handleOpenDetails(vacancy.id)}
                             sx={{
                                 height: '100%',
                                 display: 'flex',
@@ -217,6 +217,7 @@ export default function VacanciesList() {
                                 borderColor: 'divider',
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                                 transition: 'all 0.2s ease',
+                                cursor: 'pointer',
                                 '&:hover': {
                                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                                     transform: 'translateY(-2px)',
@@ -303,7 +304,10 @@ export default function VacanciesList() {
                                                 borderColor: 'primary.main',
                                             }
                                         }}
-                                        onClick={() => handleCopyLink(vacancy.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleCopyLink(vacancy.id);
+                                        }}
                                     >
                                         <Typography variant="body2" color="text.secondary" sx={{
                                             overflow: 'hidden',
@@ -319,23 +323,6 @@ export default function VacanciesList() {
                                     </Box>
                                 </Tooltip>
                             </CardContent>
-
-                            <CardActions sx={{p: 2, pt: 0}}>
-                                <Button
-                                    size="small"
-                                    onClick={() => handleOpenDetails(vacancy.id)}
-                                    sx={{
-                                        borderRadius: 1,
-                                        color: 'primary.main',
-                                        '&:hover': {
-                                            background: gradientTheme.light,
-                                        },
-                                        transition: 'all 0.2s ease',
-                                    }}
-                                >
-                                    Подробнее
-                                </Button>
-                            </CardActions>
                         </Card>
                     </Grid>
                 ))}
@@ -407,17 +394,28 @@ export default function VacanciesList() {
                         </Box>
                     ) : selectedVacancy ? (
                         <Box sx={{py: 1}}>
-                            {/* Заголовок и дата */}
-                            <Box sx={{display: 'flex', alignItems: 'center', gap: 1, mb: 2}}>
-                                <WorkIcon color="primary"/>
-                                <Typography variant="h6" sx={{fontWeight: 600}}>
-                                    {selectedVacancy.title}
-                                </Typography>
+                            {/* Заголовок и дата в стиле деталей кандидата */}
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                mb: 3,
+                                flexDirection: {xs: 'column', md: 'row'},
+                                gap: 2
+                            }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', gap: 1.5}}>
+                                    <Typography variant="h5" sx={{fontWeight: 600}}>
+                                        {selectedVacancy.title}
+                                    </Typography>
+                                </Box>
+                                <Box sx={{textAlign: {xs: 'left', md: 'right'}}}>
+                                    <Typography variant="caption" color="text.secondary">Дата создания
+                                        вакансии</Typography>
+                                    <Typography variant="body2" sx={{mb: 1, fontWeight: 500}}>
+                                        {formatDate(selectedVacancy.created_at)}
+                                    </Typography>
+                                </Box>
                             </Box>
-
-                            <Typography variant="caption" color="text.secondary" sx={{mb: 3, display: 'block'}}>
-                                Создана: {formatDate(selectedVacancy.created_at)}
-                            </Typography>
 
                             {/* Ключевые навыки */}
                             <Typography variant="subtitle2" sx={{fontWeight: 600, mb: 1}}>
@@ -548,7 +546,7 @@ export default function VacanciesList() {
                     )}
                 </DialogContent>
 
-                <DialogActions sx={{p: 2, gap: 1}}>
+                <DialogActions sx={{p: 2, gap: 1, justifyContent: 'flex-start'}}>
                     <Button
                         startIcon={<DeleteIcon/>}
                         onClick={handleDeleteClick}
@@ -562,19 +560,6 @@ export default function VacanciesList() {
                         }}
                     >
                         Удалить вакансию
-                    </Button>
-                    <Button
-                        onClick={handleCloseDialog}
-                        variant="contained"
-                        sx={{
-                            borderRadius: 1,
-                            background: gradientTheme.primary,
-                            '&:hover': {
-                                background: gradientTheme.hover,
-                            },
-                        }}
-                    >
-                        Закрыть
                     </Button>
                 </DialogActions>
             </Dialog>
