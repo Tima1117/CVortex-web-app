@@ -662,8 +662,8 @@ export default function CandidatesList() {
                                     <Chip
                                         label={getStatusLabel(selectedCandidate.meta.status)}
                                         color={getStatusColor(selectedCandidate.meta.status)}
-                                        size="medium"
-                                        sx={{borderRadius: 1, fontWeight: 600}}
+                                        size="small"
+                                        sx={{borderRadius: 2, fontWeight: 600}}
                                     />
                                 </Box>
                                 <Box sx={{textAlign: {xs: 'left', md: 'right'}}}>
