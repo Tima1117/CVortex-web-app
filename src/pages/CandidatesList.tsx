@@ -229,7 +229,7 @@ export default function CandidatesList() {
         const matchesStatus = statusFilter === 'all' || candidate.status === statusFilter;
         const matchesArchived = showArchived ? true : !candidate.isArchived;
 
-        return matchesSearch && matchesStatus && matchesArchived;
+        return matchesSearch && matchesStatus && matchesArchived && candidate.type == 0;
     });
 
     const sortedCandidates = [...filteredCandidates].sort((a, b) => {

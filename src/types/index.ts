@@ -55,6 +55,7 @@ export interface Candidate {
     city: string;
     created_at: Date;
     telegram_username: string;
+    type: number;
 }
 
 export interface Meta {

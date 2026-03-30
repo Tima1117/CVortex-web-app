@@ -159,7 +159,7 @@ export default function MassScreening() {
 
     // Формируем плоскую структуру для отображения
     const candidates = candidateVacancies
-        .filter(cv => !cv.meta.is_archived)
+        .filter(cv => !cv.meta.is_archived && cv.candidate.type == 1)
         .map(cv => ({
             ...cv.candidate,
             vacancyTitle: cv.vacancy.title,

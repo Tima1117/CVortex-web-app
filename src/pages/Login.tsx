@@ -1,15 +1,17 @@
 import {Box, Button, Container, Divider, Fade, Paper, Typography} from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
+
 export default function Login() {
     const handleLogin = () => {
         localStorage.setItem('isAuthenticated', 'true');
-        window.location.href = 'https://kekly.ru/api/v1/login?provider=demo';
+        window.location.href = `${API_BASE_URL}/api/v1/login?provider=demo`;
     };
 
     const handleYandexLogin = () => {
         localStorage.setItem('isAuthenticated', 'true');
-        window.location.href = 'https://kekly.ru/api/v1/login?provider=yandex';
+        window.location.href = `${API_BASE_URL}/api/v1/login?provider=yandex`;
     };
 
     const buttonStyles = {

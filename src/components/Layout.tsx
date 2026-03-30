@@ -23,6 +23,8 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import FilterAltIcon from '@mui/icons-material/FilterAlt'; // <-- импорт для массового скрининга
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
+
 const drawerWidth = 280;
 
 interface LayoutProps {
@@ -40,7 +42,7 @@ export default function Layout({children}: LayoutProps) {
 
     const handleLogout = () => {
         localStorage.removeItem('isAuthenticated');
-        window.location.href = 'https://kekly.ru/api/v1/logout';
+        window.location.href = `${API_BASE_URL}/api/v1/logout`;
     };
 
     const handleProfile = () => {
