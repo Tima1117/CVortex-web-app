@@ -398,6 +398,7 @@ export default function MassScreening() {
                     <TableHead>
                         <TableRow sx={{bgcolor: 'grey.50'}}>
                             <TableCell sx={{fontWeight: 600, py: 2}}>Наименование</TableCell>
+                            <TableCell sx={{fontWeight: 600, py: 2}}>Вакансия</TableCell>
                             <TableCell sx={{fontWeight: 600, py: 2}}>Статус</TableCell>
                             <TableCell sx={{fontWeight: 600, py: 2}} align="center">Скрининг</TableCell>
                             <TableCell sx={{fontWeight: 600, py: 2}}>
@@ -414,7 +415,7 @@ export default function MassScreening() {
                     <TableBody>
                         {sortedCandidates.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} align="center" sx={{py: 4}}>
+                                <TableCell colSpan={5} align="center" sx={{py: 4}}>
                                     <Typography variant="body1" color="text.secondary">
                                         Кандидаты не найдены
                                     </Typography>
@@ -437,6 +438,11 @@ export default function MassScreening() {
                                     <TableCell sx={{py: 2}}>
                                         <Typography variant="body1" sx={{fontWeight: 500}}>
                                             {candidate.full_name}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell sx={{py: 2}}>
+                                        <Typography variant="body2">
+                                            {candidate.vacancyTitle}
                                         </Typography>
                                     </TableCell>
                                     <TableCell sx={{py: 2}}>
